@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+@AGENTS.md
+
 This is a mobile-first grassroots football platform for township and community football in
 South Africa. It's a PrimeCode Solutions product used by several partner organisations. The first
 pilot is Batho Pele (QwaQwa Development League U19, Stream A).
@@ -17,19 +19,25 @@ pilot is Batho Pele (QwaQwa Development League U19, Stream A).
 - Deployed on Vercel
 - Timezone: `Africa/Johannesburg` for all display and date logic. Store UTC `timestamptz`.
 
-## Commands (available from Milestone 1)
+## Commands
 
 ```
-pnpm dev            # local dev server
-pnpm build          # production build
-pnpm typecheck      # tsc --noEmit
-pnpm lint           # eslint .
-pnpm test           # vitest run
-pnpm db:generate    # drizzle-kit generate (after editing lib/db/schema.ts)
-pnpm db:migrate     # apply migrations in db/migrations
-pnpm db:seed        # seed Batho Pele + Demo orgs (idempotent)
-pnpm db:studio      # drizzle studio
+pnpm dev              # local dev server
+pnpm build            # production build
+pnpm typecheck        # next typegen && tsc --noEmit
+pnpm lint             # eslint .
+pnpm test             # vitest run (DB tests use in-memory PGlite; no DB needed)
+pnpm db:generate      # drizzle-kit generate --name <change> (after editing lib/db/schema.ts)
+pnpm db:migrate       # drizzle-kit migrate (applies db/migrations)
+pnpm db:seed          # seed Batho Pele + Demo (idempotent; --overwrite-results re-applies seed results)
+pnpm db:studio        # drizzle studio
+pnpm db:up / db:down  # optional local Postgres via Docker
 ```
+
+- Next.js is 16.x. Read `node_modules/next/dist/docs/` before using an API (see AGENTS.md).
+  `middleware` is now `proxy.ts`.
+- pnpm enforces a minimum release age for packages. Don't bypass it; pick an older version.
+- Env: `.env.local`. Next.js and the scripts both load it via `@next/env`.
 
 Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any failures.
 
@@ -49,7 +57,8 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 - `lib/share/`: caption builders
 - `lib/env.ts`: validated env
 - `db/migrations/`: generated SQL, committed
-- `scripts/seed*`: seed scripts
+- `scripts/seed.ts` + `scripts/seed/`: the seed. Real Batho Pele results live in
+  `scripts/seed/data/batho-pele-stream-a.ts` (organiser-published results only).
 - `tests/`: Vitest tests. Fixtures go in `tests/fixtures/`.
 
 ## Non-negotiable rules

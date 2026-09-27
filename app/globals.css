@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/*
+ * Brand tokens. Defaults here; app/[org]/layout.tsx overrides them per organisation
+ * with the organisation's colours (Milestone 3).
+ */
+:root {
+  --brand-primary: #1f2937;
+  --brand-secondary: #4b5563;
+  --brand-text: #111111;
+  --brand-bg: #f4f4f2;
+  --surface: #ffffff;
+  --muted: #6b7280;
+  --positive: #1e7b34;
+  --negative: #c62828;
+}
+
+@theme inline {
+  --color-brand: var(--brand-primary);
+  --color-brand-2: var(--brand-secondary);
+  --color-ink: var(--brand-text);
+  --color-page: var(--brand-bg);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--brand-bg);
+  color: var(--brand-text);
+  font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
+}
