@@ -32,7 +32,7 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "db/migrations/**"]),
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "db/migrations/**", ".kilo/**"]),
 ]);
 
 export default eslintConfig;
