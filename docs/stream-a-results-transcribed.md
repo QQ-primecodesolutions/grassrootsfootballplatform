@@ -1,4 +1,4 @@
-# Stream A results: transcribed from the organiser's matchday graphics (to verify)
+# Open Stream A (Tseki) results: transcribed from the organiser's matchday graphics (to verify)
 
 **Status: unverified. NOT used by the seed.** This transcribes the results panels in
 `docs/reference/`, so the organiser (or you) can confirm them before they go into
@@ -24,9 +24,9 @@ graphic confirms this order for round 1.
 | 4 | 2026-07-13 | Remember Matoota FC | 4–0 | Tseki Galaxy FC | results 4.png |
 | 4 | 2026-07-13 | Tseki Junior Stars FC | 4–2 | Passion FC | results 4.png |
 | 4 | 2026-07-13 | Lere La Tshepe FC | 1–1 | Samba Boys FC | results 4.png |
-| 5 | 2026-07-25 | Tseki Galaxy FC | 0–1 | Tseki Junior Stars FC | QDL U19 Facebook post, 25 July |
+| 5 | 2026-07-25 | Tseki Galaxy FC | 0–1 | Tseki Junior Stars FC | QDL Facebook post, 25 July |
 | 5 | 2026-07-25 | Samba Boys FC | **3–0 or 0–0?** | Passion FC | FB post (Samba score rendered as an emoji) ⚠ |
-| 5 | 2026-07-25 | Remember Matoota FC | 1–2 | Lere La Tshepe FC | QDL U19 Facebook post, 25 July |
+| 5 | 2026-07-25 | Remember Matoota FC | 1–2 | Lere La Tshepe FC | QDL Facebook post, 25 July |
 | 6 | 2026-08-08 | Remember Matoota FC | 1–1 | Tseki Junior Stars FC | results 6.png |
 | 6 | 2026-08-08 | Samba Boys FC | 2–2 | Tseki Galaxy FC | results 6.png |
 | 6 | 2026-08-08 | Passion FC | 2–1 | Lere La Tshepe FC | results 6.png |
@@ -36,7 +36,7 @@ graphic confirms this order for round 1.
 
 ## ⚠ Points to confirm with the organiser
 
-1. **Round 5, Samba Boys vs Passion FC: 0–0 or 3–0?** The QDL U19 Facebook post of 25 July
+1. **Round 5, Samba Boys vs Passion FC: 0–0 or 3–0?** The QDL Facebook post of 25 July ("Senior Teams/Open")
    gives the home/away order and the other two scores, which match the derived values. It
    shows "Passion FC :0", but Samba Boys' score is an emoji, and the round has been reported
    as **0–0**. The organiser's own **8 August table only works with Samba 3–0 Passion**:
@@ -46,8 +46,7 @@ graphic confirms this order for round 1.
      so round 5 must be a 0–3 loss.
 
    Facebook converts a typed ":3" into its "colon-three" emoticon, which likely explains the
-   emoji. The post is also headed "Senior Teams/Open", although it lists these U19 Stream A
-   teams. A 0–0 would put Samba on 5 pts with W0 D4, contradicting the 8 Aug and 15 Aug tables.
+   emoji. A 0–0 would put Samba on 5 pts with W0 D4, contradicting the 8 Aug and 15 Aug tables.
    **Needs the organiser's confirmation.**
 2. **Round 3, Lere La Tshepe vs Tseki Junior Stars** is marked "abandoned the match" but
    counted as 0–2. I'd model it as `status = completed`, `outcome_type = awarded`, 0–2, with a
@@ -60,10 +59,21 @@ graphic confirms this order for round 1.
    show shared positions. The organiser may use a different tie-breaker (fewer goals conceded
    would fit both cases), or it may be ad hoc. Only the 15 Aug table is reconciled in tests, and
    it has no ties on points. Worth asking what tie-breakers they actually use.
-5. **Branding differences.** The 7 June graphics are **blue**, and the fixture poster says
-   "QWAQWA DEVELOPMENT LEAGUE **OPEN**", yet they show these same six teams. The 13 July
-   competition logo reads "U13". Probably template slips. Worth confirming that all rounds
-   belong to U19 Stream A.
+5. ~~Branding differences~~ **Resolved:** these are QDL's **Open/Senior** teams, run by Batho
+   Pele. So the "OPEN" fixture poster is correct, and "U19" is part of the parent body's name.
+   The 7 June graphics being blue, and the "U13" on the 13 July logo, look like template slips.
 6. The graphics show **more sponsors** than the four seeded (e.g. "Tsebella oa Sethaba Community
    Development", "Moteb Phuthe Funeral Assurance", a "7K"/"ZA" badge). Awaiting organiser
    confirmation, as agreed.
+
+## Stream B (Phuthaditjhaba): known so far, not seeded
+
+From the same 25 July post (round unknown):
+
+| Date | Home | Score | Away |
+|---|---|---|---|
+| 2026-07-25 | Junior Stars | 2–2 | Dynamos FC |
+| 2026-07-25 | Botjhabela United | 3–2 | International FC |
+
+Needed before seeding: the full team list, official names (with or without "FC"), the
+format, all results so far, and any published table to reconcile against.

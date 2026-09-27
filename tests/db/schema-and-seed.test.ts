@@ -190,7 +190,7 @@ describe("database constraints", () => {
         name: "Sneaky FC",
         shortName: "Sneaky",
         slug: "sneaky-fc",
-        category: "U19",
+        category: "Open",
       }), "teams_club_fk");
   });
 

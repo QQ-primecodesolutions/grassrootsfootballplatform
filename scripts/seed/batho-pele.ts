@@ -18,7 +18,7 @@ import {
 } from "./upsert";
 
 export const BATHO_PELE_SLUG = "batho-pele";
-export const STREAM_A_SLUG = "qdl-u19-stream-a-2026";
+export const STREAM_A_SLUG = "qdl-open-stream-a-2026";
 
 export async function seedBathoPele(db: Db, opts: { overwriteResults: boolean; counters: SeedCounters }) {
   const org = await upsertOrganisation(db, {
@@ -51,22 +51,25 @@ export async function seedBathoPele(db: Db, opts: { overwriteResults: boolean; c
       club: team.name,
       name: team.name,
       shortName: team.shortName,
-      category: "U19",
+      category: "Open",
       gender: null,
       aliases: [...team.aliases],
     });
     teamIdByName.set(team.name, id);
   }
 
-  // "QwaQwa Development League U19" is the competition brand (umbrella body), with its own
-  // logo (to be supplied) and slogan. Graphics show org + competition logos side by side.
+  // Batho Pele runs the Open/Senior league of the QwaQwa Development League U19 (the parent
+  // body) in two streams: A (Tseki) and B (Phuthaditjhaba). The competition carries the QDL
+  // brand (logo to be supplied, slogan); graphics show org + QDL logos side by side.
+  // Stream B is not seeded until the organiser supplies its teams and results.
   const competition = await upsertCompetition(db, {
     organisationId: org.id,
     seasonId: season.id,
-    name: "QwaQwa Development League U19",
+    name: "QwaQwa Development League Open",
     slug: STREAM_A_SLUG,
     type: "league",
     streamLabel: "Stream A",
+    area: "Tseki",
     slogan: "It's time to shine",
     expectedMatchCount: STREAM_A_SEASON_MATCHES,
     isFeatured: true,

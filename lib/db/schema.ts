@@ -209,6 +209,8 @@ export const competitions = pgTable(
     slug: text("slug").notNull(),
     type: competitionType("type").notNull(),
     streamLabel: text("stream_label"),
+    /** Where the competition/stream is played, e.g. "Tseki". */
+    area: text("area"),
     slogan: text("slogan"),
     logoUrl: text("logo_url"),
     /** Validated with lib/rules (zod) on every read and write. */

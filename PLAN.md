@@ -11,8 +11,8 @@ the rest of the document, this section wins.
    ranks by points → GD → GF. This is flagged as an assumption in the rules banner.
 3. Stream A is assumed to be a **double round-robin (10 rounds)**, currently after round 7. Each
    stream is its own competition with `stream_label`.
-4. Org display name: **"Batho Pele Kasi Soccer Tournament"** (Tseki Village, Qwaqwa). The slug
-   stays `batho-pele`.
+4. Org display name: **"Batho Pele Kasi Soccer Tournament"**. The slug stays `batho-pele`.
+   Batho Pele runs the **Open/Senior** league (see Context), not U19.
 5. A walkover stores only the winner, and the engine applies `rules.walkover`. An *awarded*
    result stores the entered score and counts like a normal result. `countGoals` does **not**
    apply to awarded results.
@@ -42,12 +42,23 @@ the rest of the document, this section wins.
 - E. The random-league property test stays, but it's lower priority than the named cases.
 
 **Context**
-- "QwaQwa Development League U19" is an umbrella body. For now it's treated as the
-  **competition brand**: competition name, competition logo and slogan ("It's time to shine").
-  Graphics show the **organisation logo and the competition logo side by side**, as in the
-  references.
-- Later, QDL may become its own organisation that needs a view across several organisers'
-  competitions. Not built now. Nothing here should block adding a nullable
+- **"QwaQwa Development League U19" (QDL) is the parent organisation.** Batho Pele Kasi
+  Soccer Tournament is responsible for QDL's **Open/Senior** teams, in two streams:
+  **Stream A (Tseki)** and **Stream B (Phuthaditjhaba)**. Each stream is its own competition:
+  - name "QwaQwa Development League Open", with `stream_label` and the new `competitions.area`
+    column, e.g. "Stream A · Tseki"
+  - slug `qdl-open-stream-a-2026`
+  - teams have category `Open`
+
+  The QDL logo and slogan ("It's time to shine") are carried as the **competition brand**.
+  Graphics show the **Batho Pele logo and the QDL logo side by side**, as in the references.
+  The "U19"/"U13" text in the QDL logo is part of the parent's name, not the competition's age group.
+- **Stream B** is not seeded yet. So far we know only 4 team names (Junior Stars, Dynamos FC,
+  Botjhabela United, International FC) and two 25 July results. Note that "Junior Stars"
+  (Stream B) is a different team from "Tseki Junior Stars FC" (Stream A). Alias matching is
+  scoped to the competition, so pasted fixtures can't cross streams.
+- Adding QDL as a parent organisation (with a view across its member organisations'
+  competitions) is later work. Not built now. Nothing here should block adding a nullable
   `organisations.parent_organisation_id` plus a cross-org competition view. Concretely:
   - competition identity doesn't depend on a single-org URL. Competitions have their own UUID.
   - query helpers take an `OrgScope`, which can later be widened to a set of orgs.
@@ -210,11 +221,11 @@ Ambiguity is resolved in *competition* scope when pasting (§6).
 `UNIQUE (organisation_id, name)`.
 
 **competitions**: `id`, `organisation_id`, `season_id`, `name`, `slug`, `type competition_type`,
-`stream_label` (nullable, "Stream A"), `slogan` (nullable, "It's time to shine"), `logo_url`,
+`stream_label` (nullable, "Stream A"), `area` (nullable, "Tseki"), `slogan` (nullable, "It's time to shine"), `logo_url`,
 `rules jsonb NOT NULL` (zod-validated, defaults applied on read and write), `is_featured bool`,
 `sort_order int`. FK `(season_id, organisation_id)` → seasons. `UNIQUE (organisation_id, slug)`
 and `UNIQUE (id, organisation_id)`.
-Slug example: `qdl-u19-stream-a-2026`.
+Slug example: `qdl-open-stream-a-2026`.
 
 **competition_entries**: `id`, `organisation_id`, `competition_id`, `team_id`,
 `display_name` (nullable override), `group_label` (nullable, for `group_knockout`),

@@ -4,7 +4,8 @@
 
 This is a mobile-first grassroots football platform for township and community football in
 South Africa. It's a PrimeCode Solutions product used by several partner organisations. The first
-pilot is Batho Pele (QwaQwa Development League U19, Stream A).
+pilot is Batho Pele Kasi Soccer Tournament, which runs the Open/Senior league of the QwaQwa
+Development League U19 (the parent body) in two streams: A (Tseki) and B (Phuthaditjhaba).
 
 - Source brief: `docs/PROTOTYPE_BRIEF.md`
 - Agreed design: `PLAN.md`

@@ -139,6 +139,7 @@ export async function upsertCompetition(
     slug: string;
     type: "league" | "knockout" | "group_knockout";
     streamLabel?: string | null;
+    area?: string | null;
     slogan?: string | null;
     rules?: Partial<CompetitionRules>;
     expectedMatchCount?: number | null;
@@ -149,6 +150,7 @@ export async function upsertCompetition(
   const values = {
     ...input,
     streamLabel: input.streamLabel ?? null,
+    area: input.area ?? null,
     slogan: input.slogan ?? null,
     rules: parseRules(input.rules ?? {}),
     expectedMatchCount: input.expectedMatchCount ?? null,

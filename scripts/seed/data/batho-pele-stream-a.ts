@@ -1,5 +1,5 @@
 /**
- * Batho Pele — QwaQwa Development League U19, Stream A.
+ * Batho Pele — QwaQwa Development League Open (Senior), Stream A (Tseki).
  *
  * REAL ORGANISATION: only results the organiser has published or supplied go here.
  * Never invent or "fill in" results. Add the remaining rounds as the organiser
