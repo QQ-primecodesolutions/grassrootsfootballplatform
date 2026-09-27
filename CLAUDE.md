@@ -97,7 +97,11 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
   `"use cache"` + `cacheLife("hours")` + tags from `lib/cache/tags.ts` (org, competition,
   match, team). Admin mutations must invalidate those tags (`updateTag` in Server Actions).
 - `app/[org]/layout.tsx` awaits `params` inside `<Suspense>`, so every `/[org]/…` route gets an
-  App Shell. Pages under it can await params directly.
+  App Shell. That boundary only covers full page loads. **Every page must also** export a
+  plain (non-async) default component that renders `<Suspense fallback={<PageSkeleton />}>`
+  around an async `…Content({ params })` component, and await `params` only inside it.
+  Otherwise dev prints "encountered URL data during prerendering or a navigation", and a tapped
+  link waits for the database instead of showing the skeleton straight away.
 - Public pages must not read the clock (`Date.now()`/`new Date()`). "Upcoming" means scheduled or
   postponed, in kickoff order.
 - `pnpm build` prerenders `/`, so the build needs `DATABASE_URL`.
