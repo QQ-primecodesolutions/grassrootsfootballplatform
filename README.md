@@ -65,4 +65,5 @@ When `DATABASE_URL` points at `localhost`, the app uses the `pg` driver instead 
 pnpm typecheck && pnpm lint && pnpm test
 ```
 
+`pnpm build` prerenders the home page, so it needs `DATABASE_URL`, just like the Vercel build.
 `pnpm test` needs no database. DB tests run the real migrations against in-memory Postgres (PGlite).

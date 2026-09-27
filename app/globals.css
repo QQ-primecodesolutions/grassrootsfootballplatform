@@ -2,15 +2,17 @@
 
 /*
  * Brand tokens. Defaults here; app/[org]/layout.tsx overrides them per organisation
- * with the organisation's colours (Milestone 3).
+ * (lib/public/org.ts → brandStyle).
  */
 :root {
   --brand-primary: #1f2937;
   --brand-secondary: #4b5563;
+  --brand-on-primary: #ffffff;
+  --brand-on-secondary: #ffffff;
   --brand-text: #111111;
   --brand-bg: #f4f4f2;
   --surface: #ffffff;
-  --muted: #6b7280;
+  --muted: #5f6672;
   --positive: #1e7b34;
   --negative: #c62828;
 }
@@ -18,6 +20,8 @@
 @theme inline {
   --color-brand: var(--brand-primary);
   --color-brand-2: var(--brand-secondary);
+  --color-on-brand: var(--brand-on-primary);
+  --color-on-brand-2: var(--brand-on-secondary);
   --color-ink: var(--brand-text);
   --color-page: var(--brand-bg);
   --color-surface: var(--surface);
@@ -25,6 +29,7 @@
   --color-positive: var(--positive);
   --color-negative: var(--negative);
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-barlow-condensed), "Arial Narrow", system-ui, sans-serif;
 }
 
 body {

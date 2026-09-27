@@ -38,6 +38,9 @@ the rest of the document, this section wins.
   don't follow GD → GF. The defaults stay configurable, and we don't reverse-engineer an order
   from the graphics.
 - Stream B is out of scope for now.
+- Milestone 3 (public pages) ships `generateMetadata` on every page. The Open Graph **images** come in
+  Milestone 5, alongside the other graphics (change D). The team page shows the latest season only;
+  `?season=` is deferred.
 
 **Changes**
 - A. CHECK: `outcome_type = 'walkover'` ⇒ `status = 'completed'`.

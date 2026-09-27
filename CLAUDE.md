@@ -91,6 +91,19 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 10. **Use boring, documented choices.** Don't add a dependency without a clear need, and note why
     in the commit.
 
+## Caching (Next 16 Cache Components)
+
+- `cacheComponents` and `partialPrefetching` are on. Public queries in `lib/db/queries` use
+  `"use cache"` + `cacheLife("hours")` + tags from `lib/cache/tags.ts` (org, competition,
+  match, team). Admin mutations must invalidate those tags (`updateTag` in Server Actions).
+- `app/[org]/layout.tsx` awaits `params` inside `<Suspense>`, so every `/[org]/…` route gets an
+  App Shell. Pages under it can await params directly.
+- Public pages must not read the clock (`Date.now()`/`new Date()`). "Upcoming" means scheduled or
+  postponed, in kickoff order.
+- `pnpm build` prerenders `/`, so the build needs `DATABASE_URL`.
+- Public match data goes through `toPublicResult`, which drops scores unless the match is
+  completed and confirmed.
+
 ## Conventions
 
 - Validate every Server Action with zod and return `{ ok: true } | { ok: false, errors }`.
