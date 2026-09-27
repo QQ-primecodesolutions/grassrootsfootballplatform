@@ -62,8 +62,15 @@ export const publicEnv = parse(publicSchema, {
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
 });
 
-/** Absolute site origin for OG images and share links. */
+/**
+ * Absolute site origin for OG images and share links: the deployment's own URL on Vercel
+ * preview deployments, otherwise NEXT_PUBLIC_SITE_URL, then the production domain.
+ */
 export function siteUrl(): string {
+  if (process.env.VERCEL_ENV === "preview") {
+    const preview = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL;
+    if (preview) return `https://${preview}`;
+  }
   if (publicEnv.NEXT_PUBLIC_SITE_URL) return publicEnv.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
   const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
   if (vercel) return `https://${vercel}`;

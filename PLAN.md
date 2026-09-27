@@ -56,6 +56,15 @@ the rest of the document, this section wins.
   - The supplied QDL logo shows BrandCrowd watermarks, and the Batho Pele logo is low-resolution
     (217×60 after cropping) and reads "Batho Pele Tournaments". Clean originals are requested.
 
+- Milestone 6 (deploy), 2026-09-27, approved by the owner. The database driver moves from Neon's
+  WebSocket `Pool` to node-postgres over TCP with `attachDatabasePool` from `@vercel/functions`,
+  following Neon's current guidance for Vercel Fluid compute. `@neondatabase/serverless` is removed,
+  and one driver now serves Neon, Docker and the scripts.
+  - Connection strings are upgraded from `sslmode=require` to `verify-full`. That matches pg 8's
+    current behaviour and won't weaken in pg 9.
+  - Vercel runs `pnpm db:migrate && pnpm build` (`vercel.json`), with Corepack enabled for pnpm 12.
+  - Production is seeded once with `pnpm db:seed --no-demo`.
+
 **Changes**
 - A. CHECK: `outcome_type = 'walkover'` ⇒ `status = 'completed'`.
 - B. Graphics route handlers send `Cache-Control: public, s-maxage=…, stale-while-revalidate=…`

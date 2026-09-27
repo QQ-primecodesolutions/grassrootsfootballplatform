@@ -14,7 +14,8 @@ Development League U19 (the parent body) in two streams: A (Tseki) and B (Phutha
 ## Stack
 
 - Next.js (App Router), TypeScript strict, Tailwind CSS v4
-- Neon Postgres via `@neondatabase/serverless`, with Drizzle ORM and drizzle-kit
+- Neon Postgres via node-postgres (`pg`, TCP pool + `attachDatabasePool` from `@vercel/functions`),
+  with Drizzle ORM and drizzle-kit. Same driver locally (Docker) and on Neon
 - zod for all input validation; Server Actions for admin mutations
 - `next/og` for PNG graphics and OG images; Vitest for tests; pnpm
 - Deployed on Vercel

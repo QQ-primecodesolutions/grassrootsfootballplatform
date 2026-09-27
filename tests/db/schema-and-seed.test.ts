@@ -45,7 +45,7 @@ describe("seed", () => {
   it("creates both organisations with the expected data", async () => {
     const first = await seedAll(db);
     expect(first.bathoPele.matchesInserted).toBe(3);
-    expect(first.demo.matchesInserted).toBe(56 + 3);
+    expect(first.demo!.matchesInserted).toBe(56 + 3);
 
     const orgs = await db.select().from(organisations).orderBy(organisations.slug);
     expect(orgs.map((o) => o.slug)).toEqual([BATHO_PELE_SLUG, DEMO_SLUG]);
@@ -134,6 +134,20 @@ async function expectViolation(write: PromiseLike<unknown>, constraint: string) 
   const text = [e.message, e.cause?.message, e.cause?.constraint].join(" ");
   expect(text).toContain(constraint);
 }
+
+describe("seed --no-demo (production pilots)", () => {
+  it("creates only the real organisation", async () => {
+    const fresh = await createTestDb();
+    try {
+      const result = await seedAll(fresh.db, { demo: false });
+      expect(result.demo).toBeUndefined();
+      const orgs = await fresh.db.select({ slug: organisations.slug }).from(organisations);
+      expect(orgs.map((o) => o.slug)).toEqual([BATHO_PELE_SLUG]);
+    } finally {
+      await fresh.close();
+    }
+  });
+});
 
 describe("loading the full Stream A fixture (pnpm db:seed:stream-a-results)", () => {
   it("adds the 18 missing results, skips the 3 already seeded, and is idempotent", async () => {

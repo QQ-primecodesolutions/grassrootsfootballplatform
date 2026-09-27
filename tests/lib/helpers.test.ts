@@ -97,3 +97,34 @@ describe("demo generators", () => {
     expect(addDays("2026-08-29", 7)).toBe("2026-09-05");
   });
 });
+
+describe("database URL TLS", () => {
+  it("asks for full certificate verification instead of sslmode=require", async () => {
+    const { withVerifiedTls } = await import("@/lib/db/url");
+    expect(withVerifiedTls("postgres://u:p@ep-x-pooler.aws.neon.tech/db?sslmode=require&channel_binding=require")).toBe(
+      "postgres://u:p@ep-x-pooler.aws.neon.tech/db?sslmode=verify-full&channel_binding=require",
+    );
+    expect(withVerifiedTls("postgres://football:football@localhost:5432/football")).toBe(
+      "postgres://football:football@localhost:5432/football",
+    );
+    expect(withVerifiedTls("postgres://u@h/db?sslmode=disable")).toBe("postgres://u@h/db?sslmode=disable");
+  });
+});
+
+describe("siteUrl", () => {
+  it("uses the deployment's own URL on Vercel previews, the production domain otherwise", async () => {
+    const { vi } = await import("vitest");
+    const { siteUrl } = await import("@/lib/env");
+    try {
+      vi.stubEnv("VERCEL_ENV", "preview");
+      vi.stubEnv("VERCEL_BRANCH_URL", "app-git-feature-team.vercel.app");
+      expect(siteUrl()).toBe("https://app-git-feature-team.vercel.app");
+      vi.stubEnv("VERCEL_ENV", "production");
+      vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "football.example.org");
+      // NEXT_PUBLIC_SITE_URL (inlined at build) wins in production when set; unset in tests.
+      expect(siteUrl()).toBe("https://football.example.org");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});

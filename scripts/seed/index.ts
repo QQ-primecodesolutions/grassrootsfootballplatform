@@ -3,9 +3,13 @@ import { seedBathoPele } from "./batho-pele";
 import { seedDemo } from "./demo";
 import { newCounters } from "./upsert";
 
-export type SeedOptions = { overwriteResults?: boolean };
+export type SeedOptions = {
+  overwriteResults?: boolean;
+  /** Also seed the fictional Demo org (default true). Production pilots use --no-demo. */
+  demo?: boolean;
+};
 
-/** Seed both organisations, each in its own transaction. Safe to re-run. */
+/** Seed Batho Pele and (unless `demo: false`) the Demo org, each in its own transaction. Safe to re-run. */
 export async function seedAll(db: Db, options: SeedOptions = {}) {
   const overwriteResults = options.overwriteResults ?? false;
 
@@ -14,11 +18,10 @@ export async function seedAll(db: Db, options: SeedOptions = {}) {
     seedBathoPele(tx, { overwriteResults, counters: bathoPeleCounters }),
   );
 
-  const demoCounters = newCounters();
-  const demo = await db.transaction((tx) => seedDemo(tx, { overwriteResults, counters: demoCounters }));
-
-  return {
-    bathoPele: { ...bathoPele, ...bathoPeleCounters },
-    demo: { ...demo, ...demoCounters },
-  };
+  let demo: (Awaited<ReturnType<typeof seedDemo>> & ReturnType<typeof newCounters>) | undefined;
+  if (options.demo ?? true) {
+    const demoCounters = newCounters();
+    demo = { ...(await db.transaction((tx) => seedDemo(tx, { overwriteResults, counters: demoCounters }))), ...demoCounters };
+  }
+  return { bathoPele: { ...bathoPele, ...bathoPeleCounters }, ...(demo ? { demo } : {}) };
 }
