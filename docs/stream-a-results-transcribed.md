@@ -13,12 +13,12 @@ graphic confirms this order for round 1.
 | Rd | Date | Home | Score | Away | Source |
 |---|---|---|---|---|---|
 | 1 | 2026-06-07 | Tseki Junior Stars FC | 2–1 | Remember Matoota FC | results 1.jpg (+ fixture 1.jpg: Itlotliseng Sports Ground) |
-| 1 | 2026-06-07 | Samba Boys FC | 0–1 | Tseki Galaxy FC | results 1.jpg (fixture 1.jpg lists Tseki Galaxy as home ⚠) |
+| 1 | 2026-06-07 | Samba Boys FC | 0–1 | Tseki Galaxy FC | results 1.jpg. Confirmed: the teams share a home ground, and Samba Boys were the home side ✓ |
 | 1 | 2026-06-07 | Lere La Tshepe FC | 0–1 | Passion FC | results 1.jpg |
 | 2 | 2026-06-20 | Samba Boys FC | 0–0 | Tseki Junior Stars FC | results 2.jpg |
 | 2 | 2026-06-20 | Tseki Galaxy FC | 1–1 | Lere La Tshepe FC | results 2.jpg |
 | 2 | 2026-06-20 | Remember Matoota FC | 4–3 | Passion FC | results 2.jpg |
-| 3 | 2026-07-04 | Lere La Tshepe FC | 0–2 | Tseki Junior Stars FC | results 3.jpg: "Lere La Tshepe FC abandoned the match" ⚠ |
+| 3 | 2026-07-04 | Lere La Tshepe FC | 0–2 | Tseki Junior Stars FC | results 3.jpg. Confirmed: Lere La Tshepe abandoned the match, 0–2 **awarded** ✓ |
 | 3 | 2026-07-04 | Remember Matoota FC | 2–1 | Samba Boys FC | results 3.jpg |
 | 3 | 2026-07-04 | Passion FC | 2–0 | Tseki Galaxy FC | results 3.jpg |
 | 4 | 2026-07-13 | Remember Matoota FC | 4–0 | Tseki Galaxy FC | results 4.png |
@@ -48,11 +48,8 @@ graphic confirms this order for round 1.
    Facebook converts a typed ":3" into its "colon-three" emoticon, which likely explains the
    emoji. A 0–0 would put Samba on 5 pts with W0 D4, contradicting the 8 Aug and 15 Aug tables.
    **Needs the organiser's confirmation.**
-2. **Round 3, Lere La Tshepe vs Tseki Junior Stars** is marked "abandoned the match" but
-   counted as 0–2. I'd model it as `status = completed`, `outcome_type = awarded`, 0–2, with a
-   note. Confirm that the 0–2 was awarded rather than the score when play stopped.
-3. **Round 1 home/away for Samba Boys vs Tseki Galaxy** differs between the fixtures graphic
-   (Galaxy home) and the results graphic (Samba first).
+2. ~~Round 3~~ **Resolved:** 0–2 was awarded (`outcome_type = awarded`, with a note).
+3. ~~Round 1 home/away~~ **Resolved:** the teams share a home ground; Samba Boys were the home side.
 4. **The published tables' tie ordering doesn't follow GD → GF.** On 7 June, Remember Matoota
    (GD −1, GF 1) is placed below Samba Boys and Lere La Tshepe (GD −1, GF 0). On 20 June, Samba
    Boys (GF 0) is above Lere La Tshepe (GF 1), both on 1 pt and GD −1. The graphics also never

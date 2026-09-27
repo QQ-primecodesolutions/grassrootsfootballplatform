@@ -5,7 +5,9 @@ import { defineConfig } from "drizzle-kit";
 loadEnvConfig(process.cwd());
 
 // `generate` works without a database; `migrate`, `push` and `studio` need DATABASE_URL.
-const url = process.env.DATABASE_URL ?? "";
+// Neon recommends a direct (unpooled) connection for migrations; the Vercel/Neon
+// integration provides it as DATABASE_URL_UNPOOLED.
+const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || "";
 
 export default defineConfig({
   dialect: "postgresql",
