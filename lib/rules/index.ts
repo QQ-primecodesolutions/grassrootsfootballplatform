@@ -48,7 +48,7 @@ export const DEFAULT_RULES: CompetitionRules = parseRules({});
 /** Shown in the admin rules banner until the organiser confirms. */
 export const RULE_ASSUMPTIONS = [
   "Points: 3 for a win, 1 for a draw, 0 for a loss.",
-  "Tie-breakers, in order: points, goal difference, goals scored, head-to-head.",
+  "Tie-breaker order is NOT yet confirmed by the organiser. Until it is, the default is: points, goal difference, goals scored, head-to-head.",
   "Head-to-head uses a mini-table of matches between the tied teams only (points, then goal difference, then goals scored). Teams still level continue down the tie-breaker list.",
   "Teams level after every tie-breaker share the same position.",
   "A walkover counts as a 3–0 win, and those goals count.",

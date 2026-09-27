@@ -31,6 +31,8 @@ pnpm test             # vitest run (DB tests use in-memory PGlite; no DB needed)
 pnpm db:generate      # drizzle-kit generate --name <change> (after editing lib/db/schema.ts)
 pnpm db:migrate       # drizzle-kit migrate (applies db/migrations)
 pnpm db:seed          # seed Batho Pele + Demo (idempotent; --overwrite-results re-applies seed results)
+pnpm db:seed:stream-a-results  # load all Stream A results from tests/fixtures/stream-a-results.json
+                      # (refuses while the fixture is "unverified": true)
 pnpm db:studio        # drizzle studio
 pnpm db:up / db:down  # optional local Postgres via Docker
 ```

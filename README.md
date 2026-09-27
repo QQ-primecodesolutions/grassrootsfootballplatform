@@ -53,8 +53,11 @@ When `DATABASE_URL` points at `localhost`, the app uses the `pg` driver instead 
 - `pnpm db:seed` is idempotent. Re-running it updates reference data and **inserts only new
   matches**, keyed on competition + home + away + match date. Results edited in admin are kept.
   `pnpm db:seed --overwrite-results` re-applies the results in the seed files.
-- Real Batho Pele results go in `scripts/seed/data/batho-pele-stream-a.ts`. Only add
-  results the organiser has published or confirmed.
+- `pnpm db:seed` loads only the three 15 Aug Batho Pele results. The full Stream A results
+  (transcribed from the organiser's posts) are in `tests/fixtures/stream-a-results.json`.
+  Once the organiser confirms them, set `"unverified": false` in that file and run
+  `pnpm db:seed:stream-a-results`. Until then the command refuses, except with
+  `--allow-unverified`, which is meant for throwaway test databases only.
 
 ## Checks
 

@@ -4,6 +4,7 @@ import {
   STREAM_A_RESULTS,
   STREAM_A_SEASON_MATCHES,
   STREAM_A_TEAMS,
+  type SeedResult,
 } from "./data/batho-pele-stream-a";
 import {
   upsertCompetition,
@@ -20,7 +21,15 @@ import {
 export const BATHO_PELE_SLUG = "batho-pele";
 export const STREAM_A_SLUG = "qdl-open-stream-a-2026";
 
-export async function seedBathoPele(db: Db, opts: { overwriteResults: boolean; counters: SeedCounters }) {
+/**
+ * Upserts the organisation, Stream A competition, teams and sponsors, then inserts
+ * `results` (default: only the organiser-published 15 Aug results). Existing matches
+ * are skipped by natural key unless `overwriteResults`.
+ */
+export async function seedBathoPele(
+  db: Db,
+  opts: { overwriteResults: boolean; counters: SeedCounters; results?: SeedResult[] },
+) {
   const org = await upsertOrganisation(db, {
     slug: BATHO_PELE_SLUG,
     name: "Batho Pele Kasi Soccer Tournament",
@@ -87,7 +96,7 @@ export async function seedBathoPele(db: Db, opts: { overwriteResults: boolean; c
   await upsertSponsors(db, org.id, competition.id, ["Mayday Alarms", "RE/MAX Maluti", "Prestige", "Next Business"]);
 
   const now = new Date();
-  for (const r of STREAM_A_RESULTS) {
+  for (const r of opts.results ?? STREAM_A_RESULTS) {
     const homeEntryId = entryFor(r.home);
     const awayEntryId = entryFor(r.away);
     let venueId: string | null = null;

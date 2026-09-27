@@ -28,6 +28,17 @@ the rest of the document, this section wins.
    seeded, social icons hidden when a link is missing, a text sponsor strip, 14-day sessions,
    colours sampled from the reference, and a delay after a failed login.
 
+**Later decisions (2026-09-27)**
+- The full Stream A results live in `tests/fixtures/stream-a-results.json`, marked
+  `"unverified": true`. Round 5 Samba Boys 3–0 Passion FC is inferred from the published tables.
+  Round 3 Lere La Tshepe 0–2 Tseki Junior Stars is an **awarded** result. The reconciliation
+  test runs against this fixture. `pnpm db:seed` still loads only the three 15 Aug results.
+  `pnpm db:seed:stream-a-results` loads the full set, and refuses while the fixture is unverified.
+- The tie-breaker order is **unknown** until the organiser answers, because their earlier tables
+  don't follow GD → GF. The defaults stay configurable, and we don't reverse-engineer an order
+  from the graphics.
+- Stream B is out of scope for now.
+
 **Changes**
 - A. CHECK: `outcome_type = 'walkover'` ⇒ `status = 'completed'`.
 - B. Graphics route handlers send `Cache-Control: public, s-maxage=…, stale-while-revalidate=…`

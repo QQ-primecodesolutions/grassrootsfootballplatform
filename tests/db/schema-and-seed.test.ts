@@ -13,9 +13,11 @@ import {
   teamAliases,
   teams,
 } from "@/lib/db/schema";
-import { BATHO_PELE_SLUG, STREAM_A_SLUG } from "@/scripts/seed/batho-pele";
+import { BATHO_PELE_SLUG, STREAM_A_SLUG, seedBathoPele } from "@/scripts/seed/batho-pele";
 import { DEMO_CUP_SLUG, DEMO_LEAGUE_SLUG, DEMO_SLUG } from "@/scripts/seed/demo";
 import { seedAll } from "@/scripts/seed/index";
+import { fixtureToSeedResults, loadStreamAFixture } from "@/scripts/seed/stream-a-fixture";
+import { newCounters } from "@/scripts/seed/upsert";
 import { createTestDb } from "../helpers/pglite";
 
 let db: Db;
@@ -132,6 +134,35 @@ async function expectViolation(write: PromiseLike<unknown>, constraint: string) 
   const text = [e.message, e.cause?.message, e.cause?.constraint].join(" ");
   expect(text).toContain(constraint);
 }
+
+describe("loading the full Stream A fixture (pnpm db:seed:stream-a-results)", () => {
+  it("adds the 18 missing results, skips the 3 already seeded, and is idempotent", async () => {
+    const results = fixtureToSeedResults(loadStreamAFixture());
+    const first = newCounters();
+    await db.transaction((tx) => seedBathoPele(tx, { overwriteResults: false, counters: first, results }));
+    expect(first).toEqual({ matchesInserted: 18, matchesUpdated: 0, matchesSkipped: 3 });
+
+    const again = newCounters();
+    await db.transaction((tx) => seedBathoPele(tx, { overwriteResults: false, counters: again, results }));
+    expect(again).toEqual({ matchesInserted: 0, matchesUpdated: 0, matchesSkipped: 21 });
+
+    const streamA = await competitionId(STREAM_A_SLUG);
+    expect(await count(matches, eq(matches.competitionId, streamA))).toBe(21);
+
+    const [awarded] = await db
+      .select()
+      .from(matches)
+      .where(and(eq(matches.competitionId, streamA), eq(matches.outcomeType, "awarded")));
+    expect(awarded).toMatchObject({
+      kickoffDate: "2026-07-04",
+      homeGoals: 0,
+      awayGoals: 2,
+      status: "completed",
+      notes: "Lere La Tshepe abandoned the match",
+    });
+    expect(awarded!.winnerEntryId).toBe(awarded!.awayEntryId);
+  });
+});
 
 describe("database constraints", () => {
   async function ctx() {

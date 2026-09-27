@@ -1,0 +1,35 @@
+{
+  "competition": "QwaQwa Development League Open — Stream A (Tseki)",
+  "organisation": "batho-pele",
+  "unverified": true,
+  "note": "Transcribed from the organiser's matchday graphics and Facebook posts (see docs/stream-a-results-transcribed.md). Round 5 Samba Boys FC 3–0 Passion FC is inferred: the 25 July post shows an emoji for Samba's score, and 3–0 is the only score consistent with the organiser's 8 and 15 August tables. Set \"unverified\" to false once the organiser confirms; then `pnpm db:seed:stream-a-results` loads these into the database.",
+  "results": [
+    { "round": 1, "date": "2026-06-07", "home": "Tseki Junior Stars FC", "away": "Remember Matoota FC", "homeGoals": 2, "awayGoals": 1, "venue": "Itlotliseng Sports Ground", "source": "results 1.jpg; fixture 1.jpg" },
+    { "round": 1, "date": "2026-06-07", "home": "Samba Boys FC", "away": "Tseki Galaxy FC", "homeGoals": 0, "awayGoals": 1, "venue": "Itlotliseng Sports Ground", "source": "results 1.jpg; home side confirmed by organiser (shared ground)" },
+    { "round": 1, "date": "2026-06-07", "home": "Lere La Tshepe FC", "away": "Passion FC", "homeGoals": 0, "awayGoals": 1, "venue": "Itlotliseng Sports Ground", "source": "results 1.jpg; fixture 1.jpg" },
+
+    { "round": 2, "date": "2026-06-20", "home": "Samba Boys FC", "away": "Tseki Junior Stars FC", "homeGoals": 0, "awayGoals": 0, "source": "results 2.jpg" },
+    { "round": 2, "date": "2026-06-20", "home": "Tseki Galaxy FC", "away": "Lere La Tshepe FC", "homeGoals": 1, "awayGoals": 1, "source": "results 2.jpg" },
+    { "round": 2, "date": "2026-06-20", "home": "Remember Matoota FC", "away": "Passion FC", "homeGoals": 4, "awayGoals": 3, "source": "results 2.jpg" },
+
+    { "round": 3, "date": "2026-07-04", "home": "Lere La Tshepe FC", "away": "Tseki Junior Stars FC", "homeGoals": 0, "awayGoals": 2, "outcome": "awarded", "notes": "Lere La Tshepe abandoned the match", "source": "results 3.jpg; awarded 0–2 confirmed by organiser" },
+    { "round": 3, "date": "2026-07-04", "home": "Remember Matoota FC", "away": "Samba Boys FC", "homeGoals": 2, "awayGoals": 1, "source": "results 3.jpg" },
+    { "round": 3, "date": "2026-07-04", "home": "Passion FC", "away": "Tseki Galaxy FC", "homeGoals": 2, "awayGoals": 0, "source": "results 3.jpg" },
+
+    { "round": 4, "date": "2026-07-13", "home": "Remember Matoota FC", "away": "Tseki Galaxy FC", "homeGoals": 4, "awayGoals": 0, "source": "results 4.png" },
+    { "round": 4, "date": "2026-07-13", "home": "Tseki Junior Stars FC", "away": "Passion FC", "homeGoals": 4, "awayGoals": 2, "source": "results 4.png" },
+    { "round": 4, "date": "2026-07-13", "home": "Lere La Tshepe FC", "away": "Samba Boys FC", "homeGoals": 1, "awayGoals": 1, "source": "results 4.png" },
+
+    { "round": 5, "date": "2026-07-25", "home": "Remember Matoota FC", "away": "Lere La Tshepe FC", "homeGoals": 1, "awayGoals": 2, "source": "QDL Facebook post, 25 July" },
+    { "round": 5, "date": "2026-07-25", "home": "Samba Boys FC", "away": "Passion FC", "homeGoals": 3, "awayGoals": 0, "source": "QDL Facebook post, 25 July (Samba score shown as emoji; 3 inferred from 8 Aug table) — UNCONFIRMED" },
+    { "round": 5, "date": "2026-07-25", "home": "Tseki Galaxy FC", "away": "Tseki Junior Stars FC", "homeGoals": 0, "awayGoals": 1, "source": "QDL Facebook post, 25 July" },
+
+    { "round": 6, "date": "2026-08-08", "home": "Remember Matoota FC", "away": "Tseki Junior Stars FC", "homeGoals": 1, "awayGoals": 1, "source": "results 6.png" },
+    { "round": 6, "date": "2026-08-08", "home": "Samba Boys FC", "away": "Tseki Galaxy FC", "homeGoals": 2, "awayGoals": 2, "source": "results 6.png" },
+    { "round": 6, "date": "2026-08-08", "home": "Passion FC", "away": "Lere La Tshepe FC", "homeGoals": 2, "awayGoals": 1, "source": "results 6.png" },
+
+    { "round": 7, "date": "2026-08-15", "home": "Tseki Junior Stars FC", "away": "Samba Boys FC", "homeGoals": 2, "awayGoals": 1, "source": "results 7.png" },
+    { "round": 7, "date": "2026-08-15", "home": "Tseki Galaxy FC", "away": "Lere La Tshepe FC", "homeGoals": 1, "awayGoals": 2, "source": "results 7.png" },
+    { "round": 7, "date": "2026-08-15", "home": "Remember Matoota FC", "away": "Passion FC", "homeGoals": 0, "awayGoals": 0, "source": "results 7.png" }
+  ]
+}
