@@ -45,6 +45,17 @@ the rest of the document, this section wins.
   Milestone 5, alongside the other graphics (change D). The team page shows the latest season only;
   `?season=` is deferred.
 
+- Milestone 5 (graphics):
+  - Graphic links carry a content version (`v`, a hash of the data drawn), so the CDN can cache
+    them for 30 days and a change always gives a new URL. Unversioned URLs are cached for 60 s.
+  - The PNGs are also cached server-side by tag.
+  - A `/graphics/{org}/match/{id}` route previews a match in any state; it's the match page's OG image.
+  - Open Graph images are set in `generateMetadata` rather than with `opengraph-image.tsx`, so they
+    use the same versioned graphics.
+  - Logos come from the organiser (`docs/logo/`), cropped into `public/brand/`.
+  - The supplied QDL logo shows BrandCrowd watermarks, and the Batho Pele logo is low-resolution
+    (217×60 after cropping) and reads "Batho Pele Tournaments". Clean originals are requested.
+
 **Changes**
 - A. CHECK: `outcome_type = 'walkover'` ⇒ `status = 'completed'`.
 - B. Graphics route handlers send `Cache-Control: public, s-maxage=…, stale-while-revalidate=…`

@@ -9,8 +9,11 @@ import { StatusBadge } from "@/components/public/StatusBadge";
 import { getCurrentAdmin } from "@/lib/auth";
 import { getAdminMatch } from "@/lib/db/queries/admin";
 import { siteUrl } from "@/lib/env";
+import { competitionGraphicVersion } from "@/lib/graphics/links";
+import { graphicPath, type GraphicTarget } from "@/lib/graphics/urls";
 import { displayState, formatKickoff } from "@/lib/match/public";
 import { shareForMatch } from "@/lib/share/for-match";
+import { sastDateKey } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Enter result" };
 
@@ -29,6 +32,7 @@ async function ResultEntry({ params }: Pick<PageProps<"/admin/results/[matchId]"
   if (!m) notFound();
 
   const share = shareForMatch(m, org, siteUrl());
+  const graphics = share ? await graphicLinks(org.slug, m) : [];
   const formMatch: ResultFormMatch = {
     id: m.id,
     competitionType: m.competitionType,
@@ -67,9 +71,33 @@ async function ResultEntry({ params }: Pick<PageProps<"/admin/results/[matchId]"
         </div>
       </div>
 
-      {share ? <SharePanel share={share} /> : null}
+      {share ? <SharePanel share={share} graphics={graphics} /> : null}
 
       <ResultForm match={formMatch} />
     </div>
   );
+}
+
+/** Download links for a confirmed result: the result card, and the matchday graphic as at its date. */
+async function graphicLinks(orgSlug: string, m: NonNullable<Awaited<ReturnType<typeof getAdminMatch>>>) {
+  const v = await competitionGraphicVersion(orgSlug, m.competitionSlug);
+  if (!v) return [];
+  const result: GraphicTarget = { kind: "result", org: orgSlug, matchId: m.id };
+  const links: { label: string; size: "portrait" | "square"; target: GraphicTarget; date: string | null }[] = [
+    { label: "Result graphic", size: "portrait", target: result, date: null },
+    { label: "Result (square)", size: "square", target: result, date: null },
+  ];
+  if (m.competitionType === "league" && m.kickoffAt) {
+    const matchday: GraphicTarget = { kind: "matchday", org: orgSlug, competition: m.competitionSlug };
+    const date = sastDateKey(m.kickoffAt);
+    links.push(
+      { label: "Matchday graphic", size: "portrait", target: matchday, date },
+      { label: "Matchday (square)", size: "square", target: matchday, date },
+    );
+  }
+  return links.map((l) => ({
+    label: l.label,
+    href: graphicPath(l.target, { size: l.size, v, date: l.date }),
+    downloadHref: graphicPath(l.target, { size: l.size, v, date: l.date, download: true }),
+  }));
 }

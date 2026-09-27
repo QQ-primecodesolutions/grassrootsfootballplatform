@@ -141,6 +141,7 @@ export async function upsertCompetition(
     streamLabel?: string | null;
     area?: string | null;
     slogan?: string | null;
+    logoUrl?: string | null;
     rules?: Partial<CompetitionRules>;
     expectedMatchCount?: number | null;
     isFeatured?: boolean;
@@ -152,6 +153,7 @@ export async function upsertCompetition(
     streamLabel: input.streamLabel ?? null,
     area: input.area ?? null,
     slogan: input.slogan ?? null,
+    logoUrl: input.logoUrl ?? null,
     rules: parseRules(input.rules ?? {}),
     expectedMatchCount: input.expectedMatchCount ?? null,
     isFeatured: input.isFeatured ?? false,

@@ -66,13 +66,38 @@ When `DATABASE_URL` points at `localhost`, the app uses the `pg` driver instead 
 - The header switches the organisation you are working in.
 - **Results**: tap a match, use the +/− buttons, then *Save provisional* or *Confirm & publish*. A
   confirmation is published straight away: the public table and pages update within seconds. The
-  share panel then offers WhatsApp, the link and a Facebook caption.
+  share panel then offers WhatsApp, the link, a Facebook caption, graphic downloads, and (on Android)
+  *Share image…*, which sends the PNG straight to WhatsApp.
 - **Paste**: paste fixtures from WhatsApp, fix any names shown in red, and save. Corrected names
   can be remembered as aliases. Fixtures that already exist are skipped.
 - **Fixture**: add a fixture. Competition, date, time and venue stay filled in for the next one.
 - **Teams**: add or edit teams and their aliases (other spellings).
 - Competitions, team entries, points adjustments, venues and branding are managed with the seed
   and scripts for now.
+
+## Graphics
+
+PNG graphics are drawn with `next/og` in the organisation's branding. They are public, and they only
+ever show confirmed results.
+
+| URL | Graphic |
+|---|---|
+| `/graphics/{org}/matchday/{competition}?date=YYYY-MM-DD` | Table as at the date (default: latest result day), that day's results, top 3 |
+| `/graphics/{org}/table/{competition}?date=…` | League table only |
+| `/graphics/{org}/fixtures/{competition}?date=…` | Fixtures on a date (default: the next match day) |
+| `/graphics/{org}/result/{matchId}` | Full-time result (404 until confirmed) |
+| `/graphics/{org}/match/{matchId}` | Match card in any state (link previews). Never shows a provisional score |
+
+- `size=portrait` (1080×1350, default), `square` (1080×1080) or `og` (1200×630).
+- `download=1` makes the browser download the file.
+- `v=…` is a content version: links from the app carry it, and it changes whenever the data changes,
+  so shared links can be cached for a long time.
+
+Every public page's link preview (`og:image`) uses these graphics.
+
+- **Logos**: set `logo_url` on the organisation, competition or sponsor. It can be a file in
+  `public/` (e.g. `/brand/qdl.png`) or an https URL. Without a logo, graphics show a text lockup.
+- **Font**: Barlow Condensed (SIL OFL, `assets/fonts/`).
 
 ## Checks
 

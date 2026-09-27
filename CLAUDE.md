@@ -48,7 +48,7 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 
 - `app/[org]/…`: public pages (Server Components by default)
 - `app/admin/…`: admin UI and Server Actions
-- `app/graphics/…`: PNG route handlers
+- `app/graphics/…`: PNG route handlers (thin); drawing lives in `lib/graphics/`
 - `components/public`, `components/admin`: small hand-written components. No UI kits.
 - `lib/standings/`: the standings engine. **Pure functions: no DB, no clock, no I/O.**
 - `lib/rules/`: the competition rules zod schema and its defaults
@@ -118,6 +118,21 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 - Every Server Action starts with `getCurrentAdmin()`, validates its input with zod, and calls
   `updateTag(...)` for each affected tag (see `tagsForMatchChange`), then `refresh()`.
 - Result rules live in `lib/match/result-input.ts` and captions in `lib/share/`. Both are pure and tested.
+
+## Graphics (`lib/graphics/`)
+
+- `model.ts`: pure view models, tested. `graphics.tsx` and `parts.tsx`: Satori JSX.
+- `render.tsx`: `"use cache"` PNG renderers tagged org/competition/match, so `updateTag` re-renders them.
+- `links.ts` and `urls.ts`: versioned URLs (`v` = hash of the drawn data) and OG metadata.
+- Satori limits:
+  - Every element with more than one child needs `display: flex`.
+  - No `z-index` (later siblings paint on top) and no `space-evenly`.
+  - Text is kerned unevenly across normal spaces. Render text through `upper()` (no-break
+    spaces) or `<Words>` (pre-wrapped lines).
+- Preview layouts without a server: render with a scratch script that stubs `next/cache`. Always
+  check all three sizes by eye.
+- Fonts and `public/brand` are read from disk. `outputFileTracingIncludes` in `next.config.ts`
+  bundles them.
 
 ## Conventions
 

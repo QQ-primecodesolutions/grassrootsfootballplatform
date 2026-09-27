@@ -34,6 +34,8 @@ export async function seedBathoPele(
     slug: BATHO_PELE_SLUG,
     name: "Batho Pele Kasi Soccer Tournament",
     shortName: "Batho Pele",
+    // Supplied by the organiser (docs/logo), cropped to the mark into public/brand/.
+    logoUrl: "/brand/batho-pele.png",
     // Sampled from docs/reference/results 7.png: tables, banners and position boxes are ~#03300B.
     // Secondary is the brief's brighter green, used for accents.
     primaryColor: "#03300B",
@@ -69,7 +71,7 @@ export async function seedBathoPele(
 
   // Batho Pele runs the Open/Senior league of the QwaQwa Development League U19 (the parent
   // body) in two streams: A (Tseki) and B (Phuthaditjhaba). The competition carries the QDL
-  // brand (logo to be supplied, slogan); graphics show org + QDL logos side by side.
+  // brand (logo + slogan); graphics show org + QDL logos side by side.
   // Stream B is not seeded until the organiser supplies its teams and results.
   const competition = await upsertCompetition(db, {
     organisationId: org.id,
@@ -80,6 +82,8 @@ export async function seedBathoPele(
     streamLabel: "Stream A",
     area: "Tseki",
     slogan: "It's time to shine",
+    // QDL logo (docs/logo/qdl logo.jpg, cropped). The supplied file carries faint stock-site watermarks.
+    logoUrl: "/brand/qdl.png",
     expectedMatchCount: STREAM_A_SEASON_MATCHES,
     isFeatured: true,
   });

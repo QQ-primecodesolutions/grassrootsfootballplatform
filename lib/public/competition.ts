@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCompetitionData } from "@/lib/db/queries";
+import { competitionOgTarget, ogImageMetadata, versionOf } from "@/lib/graphics/links";
 import { competitionSubtitle } from "@/lib/match/public";
 import { requireOrg } from "./org";
 
@@ -24,5 +25,6 @@ export async function competitionMetadata(
   return {
     title: `${section} · ${name}`,
     description: `${section} for ${name} (${c.seasonName}), from ${org.name}.`,
+    ...ogImageMetadata(competitionOgTarget(org.slug, data, tab), versionOf(org, data), `${section}: ${name}`, org.name),
   };
 }

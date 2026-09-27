@@ -7,18 +7,22 @@ import { formatLongDate, sastDateKey } from "@/lib/time";
 
 export type TableRow = StandingRow & { team: PublicTeamRef };
 
-export function standingsFor(data: {
-  entries: PublicTeamRef[];
-  matches: PublicMatch[];
-  adjustments: StandingsAdjustment[];
-  competition: { rules: CompetitionRules };
-}): TableRow[] {
+export function standingsFor(
+  data: {
+    entries: PublicTeamRef[];
+    matches: PublicMatch[];
+    adjustments: StandingsAdjustment[];
+    competition: { rules: CompetitionRules };
+  },
+  options: { asOf?: string } = {},
+): TableRow[] {
   const byEntry = new Map(data.entries.map((e) => [e.entryId, e]));
   const rows = computeStandings(
     data.entries.map((e) => ({ entryId: e.entryId, name: e.name, shortName: e.shortName })),
     data.matches.map(toStandingsMatch),
     data.competition.rules,
     data.adjustments,
+    options,
   );
   return rows.map((r) => ({ ...r, team: byEntry.get(r.entryId)! }));
 }

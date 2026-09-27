@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { getCompetitionData, listCompetitions } from "@/lib/db/queries";
 import { publicEnv } from "@/lib/env";
+import { competitionOgTarget, ogImageMetadata, versionOf } from "@/lib/graphics/links";
 import { brandStyle, requireOrg } from "@/lib/public/org";
 
 export async function generateMetadata({ params }: LayoutProps<"/[org]">): Promise<Metadata> {
   const { org: slug } = await params;
-  const { org } = await requireOrg(slug);
+  const { org, scope } = await requireOrg(slug);
   const short = org.shortName ?? org.name;
+  const [first] = await listCompetitions(scope);
+  const featured = first ? await getCompetitionData(scope, first.slug) : null;
   return {
     title: { default: org.name, template: `%s · ${short}` },
     description: org.tagline ?? `Tables, fixtures and results from ${org.name}.`,
     openGraph: { siteName: org.name },
+    // Default preview for the organisation's pages: its featured competition's table.
+    ...(featured ? ogImageMetadata(competitionOgTarget(org.slug, featured, "table"), versionOf(org, featured), org.name, org.name) : {}),
   };
 }
 

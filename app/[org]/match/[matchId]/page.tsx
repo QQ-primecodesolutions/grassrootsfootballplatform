@@ -14,21 +14,26 @@ import {
   scoreDetails,
   type PublicMatch,
 } from "@/lib/match/public";
+import { ogImageMetadata, versionOf } from "@/lib/graphics/links";
 import { requireOrg } from "@/lib/public/org";
 
-async function loadMatch(scope: OrgScope, matchId: string): Promise<PublicMatch> {
+async function loadMatchData(scope: OrgScope, matchId: string) {
   const competitionSlug = await findMatchCompetitionSlug(scope, matchId);
   if (!competitionSlug) notFound();
   const data = await getCompetitionData(scope, competitionSlug);
   const match = data?.matches.find((m) => m.id === matchId);
-  if (!match) notFound();
-  return match;
+  if (!data || !match) notFound();
+  return { data, match };
+}
+
+async function loadMatch(scope: OrgScope, matchId: string): Promise<PublicMatch> {
+  return (await loadMatchData(scope, matchId)).match;
 }
 
 export async function generateMetadata({ params }: PageProps<"/[org]/match/[matchId]">): Promise<Metadata> {
   const { org: slug, matchId } = await params;
-  const { scope } = await requireOrg(slug);
-  const m = await loadMatch(scope, matchId);
+  const { org, scope } = await requireOrg(slug);
+  const { data, match: m } = await loadMatchData(scope, matchId);
   const score = mainScore(m.result);
   const title = score ? `${m.home.name} ${score} ${m.away.name}` : `${m.home.name} vs ${m.away.name}`;
   const state = displayState(m);
@@ -42,6 +47,8 @@ export async function generateMetadata({ params }: PageProps<"/[org]/match/[matc
     ]
       .filter(Boolean)
       .join(" · "),
+    // Preview card: the score only once confirmed; otherwise "vs" + kickoff or the status.
+    ...ogImageMetadata({ kind: "match", org: org.slug, matchId: m.id }, versionOf(org, data), title, org.name),
   };
 }
 

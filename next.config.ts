@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   // Prefetch one reusable App Shell per route; unknown params upgrade after first visit.
   partialPrefetching: true,
   poweredByHeader: false,
+  // Graphics read fonts and logos from disk at request time (lib/graphics/assets.ts); make
+  // sure serverless bundles include them.
+  outputFileTracingIncludes: {
+    "/graphics/**/*": ["./assets/fonts/*.ttf", "./public/brand/**/*"],
+  },
 };
 
 export default nextConfig;

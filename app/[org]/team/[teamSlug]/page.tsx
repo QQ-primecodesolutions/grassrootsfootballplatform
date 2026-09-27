@@ -9,6 +9,7 @@ import { MatchList, MatchRow } from "@/components/public/MatchList";
 import { Section } from "@/components/public/Section";
 import { getCompetitionData, getTeamBySlug, type OrgScope } from "@/lib/db/queries";
 import { competitionSubtitle } from "@/lib/match/public";
+import { competitionOgTarget, ogImageMetadata, versionOf } from "@/lib/graphics/links";
 import { requireOrg } from "@/lib/public/org";
 import { fixturesOf, resultsOf, standingsFor, teamMatches } from "@/lib/public/views";
 
@@ -24,8 +25,10 @@ async function loadTeam(scope: OrgScope, slug: string) {
 export async function generateMetadata({ params }: PageProps<"/[org]/team/[teamSlug]">): Promise<Metadata> {
   const { org: orgSlug, teamSlug } = await params;
   const { org, scope } = await requireOrg(orgSlug);
-  const { team, seasonName } = await loadTeam(scope, teamSlug);
+  const { team, seasonName, competitions } = await loadTeam(scope, teamSlug);
+  const main = competitions[0];
   return {
+    ...(main ? ogImageMetadata(competitionOgTarget(org.slug, main, "table"), versionOf(org, main), team.name, org.name) : {}),
     title: team.name,
     description: `${team.name} (${team.category}) fixtures, results and league position${
       seasonName ? ` in ${seasonName}` : ""
