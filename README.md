@@ -59,6 +59,21 @@ When `DATABASE_URL` points at `localhost`, the app uses the `pg` driver instead 
   `pnpm db:seed:stream-a-results`. Until then the command refuses, except with
   `--allow-unverified`, which is meant for throwaway test databases only.
 
+## Admin (prototype)
+
+- Go to `/admin`. You sign in with the single `ADMIN_PASSWORD`, and a signed cookie (`AUTH_SECRET`) keeps
+  you signed in for 14 days. Set real values in `.env.local`. Production refuses the example ones.
+- The header switches the organisation you are working in.
+- **Results**: tap a match, use the +/− buttons, then *Save provisional* or *Confirm & publish*. A
+  confirmation is published straight away: the public table and pages update within seconds. The
+  share panel then offers WhatsApp, the link and a Facebook caption.
+- **Paste**: paste fixtures from WhatsApp, fix any names shown in red, and save. Corrected names
+  can be remembered as aliases. Fixtures that already exist are skipped.
+- **Fixture**: add a fixture. Competition, date, time and venue stay filled in for the next one.
+- **Teams**: add or edit teams and their aliases (other spellings).
+- Competitions, team entries, points adjustments, venues and branding are managed with the seed
+  and scripts for now.
+
 ## Checks
 
 ```bash

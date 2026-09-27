@@ -38,6 +38,9 @@ the rest of the document, this section wins.
   don't follow GD → GF. The defaults stay configurable, and we don't reverse-engineer an order
   from the graphics.
 - Stream B is out of scope for now.
+- Milestone 4 (admin): *Confirm & publish* uses a two-tap confirmation that shows the exact score.
+  A "Yes, publish …" button replaces a modal dialog because it is faster at the pitch. The
+  graphic download and the native image share in the share panel come in Milestone 5.
 - Milestone 3 (public pages) ships `generateMetadata` on every page. The Open Graph **images** come in
   Milestone 5, alongside the other graphics (change D). The team page shows the latest season only;
   `?season=` is deferred.

@@ -34,9 +34,22 @@ export function getDbEnv() {
   return dbEnv;
 }
 
+/** Values copied from .env.example; refused in production. */
+const EXAMPLE_SECRETS = new Set(["change-me-please", "replace-with-a-long-random-string-of-32-plus-chars"]);
+
 let authEnv: z.infer<typeof authSchema> | undefined;
 export function getAuthEnv() {
-  authEnv ??= parse(authSchema, process.env);
+  if (!authEnv) {
+    const parsed = parse(authSchema, process.env);
+    if (
+      process.env.NODE_ENV === "production" &&
+      process.env.VERCEL_ENV !== "preview" &&
+      (EXAMPLE_SECRETS.has(parsed.ADMIN_PASSWORD) || EXAMPLE_SECRETS.has(parsed.AUTH_SECRET))
+    ) {
+      throw new Error("ADMIN_PASSWORD / AUTH_SECRET still have the example values from .env.example. Set real ones.");
+    }
+    authEnv = parsed;
+  }
   return authEnv;
 }
 

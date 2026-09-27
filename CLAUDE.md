@@ -108,6 +108,17 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 - Public match data goes through `toPublicResult`, which drops scores unless the match is
   completed and confirmed.
 
+## Admin
+
+- Every admin page renders `<Suspense>` around an async component that calls `getCurrentAdmin()`.
+  It reads the cookie, so the read must sit inside the boundary. Client hooks that read the URL,
+  such as `usePathname()`, also need a Suspense boundary.
+- Admin data comes from `lib/db/queries/admin.ts`. It is never cached and returns raw data,
+  including provisional scores. Each function takes an `OrgScope` and an optional `db` for PGlite tests.
+- Every Server Action starts with `getCurrentAdmin()`, validates its input with zod, and calls
+  `updateTag(...)` for each affected tag (see `tagsForMatchChange`), then `refresh()`.
+- Result rules live in `lib/match/result-input.ts` and captions in `lib/share/`. Both are pure and tested.
+
 ## Conventions
 
 - Validate every Server Action with zod and return `{ ok: true } | { ok: false, errors }`.
