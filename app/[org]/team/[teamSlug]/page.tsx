@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { PageSkeleton } from "@/components/public/PageSkeleton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -31,7 +33,8 @@ export async function generateMetadata({ params }: PageProps<"/[org]/team/[teamS
   };
 }
 
-export default async function TeamPage({ params }: PageProps<"/[org]/team/[teamSlug]">) {
+/** Reads the URL and loads data inside the page's Suspense boundary (instant navigation). */
+async function TeamPageContent({ params }: Pick<PageProps<"/[org]/team/[teamSlug]">, "params">) {
   const { org: orgSlug, teamSlug } = await params;
   const { org, scope } = await requireOrg(orgSlug);
   const { team, seasonName, competitions } = await loadTeam(scope, teamSlug);
@@ -130,5 +133,13 @@ export default async function TeamPage({ params }: PageProps<"/[org]/team/[teamS
         );
       })}
     </>
+  );
+}
+
+export default function TeamPage({ params }: PageProps<"/[org]/team/[teamSlug]">) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <TeamPageContent params={params} />
+    </Suspense>
   );
 }

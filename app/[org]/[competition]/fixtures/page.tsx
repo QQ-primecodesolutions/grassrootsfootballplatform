@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { PageSkeleton } from "@/components/public/PageSkeleton";
 import type { Metadata } from "next";
 import { CompetitionHeader } from "@/components/public/CompetitionHeader";
 import { EmptyState } from "@/components/public/EmptyState";
@@ -11,7 +13,8 @@ export async function generateMetadata({ params }: PageProps<"/[org]/[competitio
   return competitionMetadata(org, competition, "fixtures");
 }
 
-export default async function FixturesPage({ params }: PageProps<"/[org]/[competition]/fixtures">) {
+/** Reads the URL and loads data inside the page's Suspense boundary (instant navigation). */
+async function FixturesPageContent({ params }: Pick<PageProps<"/[org]/[competition]/fixtures">, "params">) {
   const { org: orgSlug, competition: slug } = await params;
   const { org, data } = await requireCompetition(orgSlug, slug);
   const days = groupByDate(fixturesOf(data.matches));
@@ -33,5 +36,13 @@ export default async function FixturesPage({ params }: PageProps<"/[org]/[compet
         <EmptyState title="No fixtures yet">Check back soon for the next matchday.</EmptyState>
       )}
     </>
+  );
+}
+
+export default function FixturesPage({ params }: PageProps<"/[org]/[competition]/fixtures">) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <FixturesPageContent params={params} />
+    </Suspense>
   );
 }

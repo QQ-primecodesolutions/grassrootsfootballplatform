@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { PageSkeleton } from "@/components/public/PageSkeleton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -43,7 +45,8 @@ export async function generateMetadata({ params }: PageProps<"/[org]/match/[matc
   };
 }
 
-export default async function MatchPage({ params }: PageProps<"/[org]/match/[matchId]">) {
+/** Reads the URL and loads data inside the page's Suspense boundary (instant navigation). */
+async function MatchPageContent({ params }: Pick<PageProps<"/[org]/match/[matchId]">, "params">) {
   const { org: slug, matchId } = await params;
   const { org, scope } = await requireOrg(slug);
   const m = await loadMatch(scope, matchId);
@@ -119,5 +122,13 @@ function Row({ label, value }: { label: string; value: string }) {
       <dt className="w-20 shrink-0 text-muted">{label}</dt>
       <dd className="min-w-0 flex-1 font-medium">{value}</dd>
     </div>
+  );
+}
+
+export default function MatchPage({ params }: PageProps<"/[org]/match/[matchId]">) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <MatchPageContent params={params} />
+    </Suspense>
   );
 }

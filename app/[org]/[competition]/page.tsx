@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { PageSkeleton } from "@/components/public/PageSkeleton";
 import type { Metadata } from "next";
 import { CompetitionHeader } from "@/components/public/CompetitionHeader";
 import { EmptyState } from "@/components/public/EmptyState";
@@ -12,7 +14,8 @@ export async function generateMetadata({ params }: PageProps<"/[org]/[competitio
   return competitionMetadata(org, competition, "table");
 }
 
-export default async function CompetitionTablePage({ params }: PageProps<"/[org]/[competition]">) {
+/** Reads the URL and loads data inside the page's Suspense boundary (instant navigation). */
+async function CompetitionTablePageContent({ params }: Pick<PageProps<"/[org]/[competition]">, "params">) {
   const { org: orgSlug, competition: slug } = await params;
   const { org, data } = await requireCompetition(orgSlug, slug);
   const c = data.competition;
@@ -67,5 +70,13 @@ export default async function CompetitionTablePage({ params }: PageProps<"/[org]
         </ul>
       ) : null}
     </>
+  );
+}
+
+export default function CompetitionTablePage({ params }: PageProps<"/[org]/[competition]">) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <CompetitionTablePageContent params={params} />
+    </Suspense>
   );
 }

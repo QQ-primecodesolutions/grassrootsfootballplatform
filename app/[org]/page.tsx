@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { PageSkeleton } from "@/components/public/PageSkeleton";
 import Link from "next/link";
 import { EmptyState } from "@/components/public/EmptyState";
 import { MatchList, MatchRow } from "@/components/public/MatchList";
@@ -8,7 +10,8 @@ import { competitionSubtitle } from "@/lib/match/public";
 import { requireOrg } from "@/lib/public/org";
 import { resultsOf, standingsFor, upcomingOf } from "@/lib/public/views";
 
-export default async function OrgHomePage({ params }: PageProps<"/[org]">) {
+/** Reads the URL and loads data inside the page's Suspense boundary (instant navigation). */
+async function OrgHomePageContent({ params }: Pick<PageProps<"/[org]">, "params">) {
   const { org: slug } = await params;
   const { org, scope } = await requireOrg(slug);
   const competitions = await listCompetitions(scope);
@@ -101,5 +104,13 @@ export default async function OrgHomePage({ params }: PageProps<"/[org]">) {
         </Section>
       ) : null}
     </>
+  );
+}
+
+export default function OrgHomePage({ params }: PageProps<"/[org]">) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <OrgHomePageContent params={params} />
+    </Suspense>
   );
 }
