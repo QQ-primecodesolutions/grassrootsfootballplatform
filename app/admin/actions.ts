@@ -25,7 +25,14 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   const parsed = loginSchema.safeParse({ password: formData.get("password"), next: formData.get("next") ?? undefined });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Enter the password" };
 
-  const env = getAuthEnv();
+  let env: ReturnType<typeof getAuthEnv>;
+  try {
+    env = getAuthEnv();
+  } catch (e) {
+    // Missing or example ADMIN_PASSWORD / AUTH_SECRET: say so instead of crashing the form.
+    console.error("[admin] login unavailable:", e instanceof Error ? e.message : e);
+    return { error: "Admin login isn't set up on this server: set ADMIN_PASSWORD and AUTH_SECRET, then redeploy." };
+  }
   if (!passwordMatches(parsed.data.password, env.ADMIN_PASSWORD)) {
     // Slow down guessing. Real rate limiting comes with real auth.
     await new Promise((r) => setTimeout(r, 800));
