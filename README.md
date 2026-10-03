@@ -158,6 +158,9 @@ DATABASE_URL="postgres://…-pooler…/neondb?sslmode=require" pnpm db:seed --no
 A variable set on the command line takes priority over `.env.local`, so this can't touch your
 dev branch. It is also safe to run again later.
 
+Then **redeploy once**. The home page was built while the database was empty, and the site
+keeps that copy for up to an hour. A redeploy rebuilds it with the new organisation.
+
 ### 5. Check it
 
 - `https://<your-app>.vercel.app/` lists the organisation, and `/batho-pele` shows Stream A.
