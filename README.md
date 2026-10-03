@@ -152,22 +152,28 @@ If a migration fails, the build stops and the previous deployment stays live.
 ### 4. Seed production (once)
 
 The production database starts empty. Load the pilot's data from your machine by passing the
-production URL for this one command:
+production URL to these commands. Always migrate first: the seed may need columns that the
+next deploy hasn't added yet.
 
 ```bash
 # Neon console → production branch (main) → Connect → pooled connection string
-DATABASE_URL="postgres://…-pooler…/neondb?sslmode=require" pnpm db:seed --no-demo
+export DATABASE_URL="postgres://…-pooler…/neondb?sslmode=require"
+pnpm db:migrate
+pnpm db:seed --no-demo
 ```
 
 On Windows PowerShell (the VS Code default), use a new terminal and close it afterwards:
 
 ```powershell
 $env:DATABASE_URL="postgres://…-pooler…/neondb?sslmode=require"
+pnpm db:migrate
 pnpm db:seed --no-demo
 ```
 
 A variable set on the command line takes priority over `.env.local`, so this can't touch your
-dev branch. It is also safe to run again later.
+dev branch. Both commands are safe to run again later: re-run them after updating the seed
+(e.g. new logos or links). Migrating only applies migrations that haven't run yet, and the seed
+keeps results entered in admin.
 
 Then **redeploy once**. The home page was built while the database was empty, and the site
 keeps that copy for up to an hour. A redeploy rebuilds it with the new organisation.
