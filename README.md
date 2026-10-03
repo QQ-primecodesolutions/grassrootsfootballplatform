@@ -155,6 +155,13 @@ production URL for this one command:
 DATABASE_URL="postgres://…-pooler…/neondb?sslmode=require" pnpm db:seed --no-demo
 ```
 
+On Windows PowerShell (the VS Code default), use a new terminal and close it afterwards:
+
+```powershell
+$env:DATABASE_URL="postgres://…-pooler…/neondb?sslmode=require"
+pnpm db:seed --no-demo
+```
+
 A variable set on the command line takes priority over `.env.local`, so this can't touch your
 dev branch. It is also safe to run again later.
 
