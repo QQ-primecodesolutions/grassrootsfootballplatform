@@ -14,6 +14,7 @@ import {
   Tagline,
   Title,
   accentOf,
+  fitFontSize,
   upper,
   Words,
   type Logos,
@@ -42,8 +43,8 @@ type Metrics = {
 };
 
 const METRICS: Record<Exclude<GraphicSize, "og">, Metrics> = {
-  portrait: { pad: 40, lockups: 185, kicker: 32, title: 150, banner: 36, tagline: 52, hashtags: 24, social: 40, sponsors: 72, gap: 14 },
-  square: { pad: 36, lockups: 128, kicker: 26, title: 104, banner: 28, tagline: 40, hashtags: 20, social: 32, sponsors: 58, gap: 10 },
+  portrait: { pad: 40, lockups: 185, kicker: 32, title: 150, banner: 36, tagline: 52, hashtags: 24, social: 46, sponsors: 72, gap: 14 },
+  square: { pad: 36, lockups: 128, kicker: 26, title: 104, banner: 28, tagline: 40, hashtags: 20, social: 38, sponsors: 58, gap: 10 },
 };
 
 /** Approximate rendered heights (px) of the fixed pieces, used to budget the flexible middle. */
@@ -433,10 +434,7 @@ function MatchRow({ brand, model, width, nameFont, scoreFont }: { brand: Graphic
   const centre = model.score ?? "VS";
   const boxWidth = centre.length * scoreFont * 0.5 + scoreFont * 0.6 + 24;
   const nameWidth = Math.max(160, (width - boxWidth) / 2 - 12);
-  const fit = (text: string) => {
-    const longest = Math.max(...text.split(/s+/).map((w) => w.length));
-    return Math.min(nameFont, Math.floor(nameWidth / (longest * 0.46)));
-  };
+  const fit = (text: string) => fitFontSize(text, nameWidth, nameFont);
   return (
     <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
       <TeamName text={model.home} width={nameWidth} font={fit(model.home)} />

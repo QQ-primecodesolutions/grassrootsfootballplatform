@@ -71,6 +71,11 @@ the rest of the document, this section wins.
   admin once the organiser answers. Until then the live table differs from the organiser's 15 Aug
   table by that one match.
 
+- 2026-10-03: clean logos supplied (no watermark), re-cropped into `public/brand/`. Facebook pages
+  supplied: Batho Pele (organisation) and QDL. QDL's is stored on the competition, in the new
+  `competitions.social_links` column; there are no other social accounts. The public site links
+  both, and graphics show a Facebook icon.
+
 **Changes**
 - A. CHECK: `outcome_type = 'walkover'` ⇒ `status = 'completed'`.
 - B. Graphics route handlers send `Cache-Control: public, s-maxage=…, stale-while-revalidate=…`

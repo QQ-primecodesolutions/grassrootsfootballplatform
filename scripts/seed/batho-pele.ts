@@ -44,7 +44,8 @@ export async function seedBathoPele(
     backgroundColor: "#F4F4F2",
     tagline: "ONE GAME. ONE PASSION. ONE LEAGUE.",
     hashtags: ["#ITSTIMETOSHINE", "#QDL", "#BathoPeleKasiSoccerTournament"],
-    socialLinks: {}, // To be supplied by the organiser; icons stay hidden until then.
+    // Supplied by the organiser (2026-10-03). They have no other social accounts.
+    socialLinks: { facebook: "https://www.facebook.com/profile.php?id=61562688586348" },
   });
 
   const season = await upsertSeason(db, org.id, "2026");
@@ -84,6 +85,8 @@ export async function seedBathoPele(
     slogan: "It's time to shine",
     // QDL logo (docs/logo/qdl logo.jpg, cropped). The supplied file carries faint stock-site watermarks.
     logoUrl: "/brand/qdl.png",
+    // QwaQwa Development League U19 (the parent body) Facebook page, supplied 2026-10-03.
+    socialLinks: { facebook: "https://www.facebook.com/profile.php?id=61553366548603" },
     expectedMatchCount: STREAM_A_SEASON_MATCHES,
     isFeatured: true,
   });

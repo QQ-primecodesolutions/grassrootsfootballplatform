@@ -233,6 +233,9 @@ only ever show confirmed results.
 
 Every public page's link preview (`og:image`) uses these graphics.
 
+- **Social links**: `social_links` on the organisation and on the competition (the competition
+  brand's own pages, e.g. QDL). Each one adds a link on the public site and a Facebook icon on the
+  graphics. Only https links are shown.
 - **Logos**: set `logo_url` on the organisation, competition or sponsor. It can be a file in
   `public/` (e.g. `/brand/qdl.png`) or an https URL. Without a logo, graphics show a text lockup.
 - **Font**: Barlow Condensed (SIL Open Font License, `assets/fonts/`).

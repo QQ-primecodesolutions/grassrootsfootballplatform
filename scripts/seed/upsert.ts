@@ -13,6 +13,7 @@ import {
   teamAliases,
   teams,
   venues,
+  type SocialLinks,
 } from "@/lib/db/schema";
 import { normalizeTeamName, slugify } from "@/lib/fixtures-paste/normalize";
 import { parseRules, type CompetitionRules } from "@/lib/rules";
@@ -142,6 +143,7 @@ export async function upsertCompetition(
     area?: string | null;
     slogan?: string | null;
     logoUrl?: string | null;
+    socialLinks?: SocialLinks;
     rules?: Partial<CompetitionRules>;
     expectedMatchCount?: number | null;
     isFeatured?: boolean;
@@ -154,6 +156,7 @@ export async function upsertCompetition(
     area: input.area ?? null,
     slogan: input.slogan ?? null,
     logoUrl: input.logoUrl ?? null,
+    socialLinks: input.socialLinks ?? {},
     rules: parseRules(input.rules ?? {}),
     expectedMatchCount: input.expectedMatchCount ?? null,
     isFeatured: input.isFeatured ?? false,

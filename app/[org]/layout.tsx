@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { getCompetitionData, listCompetitions } from "@/lib/db/queries";
 import { publicEnv } from "@/lib/env";
 import { competitionOgTarget, ogImageMetadata, versionOf } from "@/lib/graphics/links";
+import { facebookUrl } from "@/lib/public/links";
 import { brandStyle, requireOrg } from "@/lib/public/org";
 
 export async function generateMetadata({ params }: LayoutProps<"/[org]">): Promise<Metadata> {
@@ -36,6 +37,7 @@ export default function OrgLayout({ children, params }: LayoutProps<"/[org]">) {
 async function OrgFrame({ params, children }: Pick<LayoutProps<"/[org]">, "params" | "children">) {
   const { org: slug } = await params;
   const { org } = await requireOrg(slug);
+  const facebook = facebookUrl(org.socialLinks);
   const initials = (org.shortName ?? org.name)
     .split(/\s+/)
     .map((w) => w[0])
@@ -51,7 +53,7 @@ async function OrgFrame({ params, children }: Pick<LayoutProps<"/[org]">, "param
             {org.logoUrl ? (
               // Plain <img>: organiser-supplied URLs on any host; small and cached by the browser.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={org.logoUrl} alt="" width={40} height={40} className="h-10 w-10 rounded bg-white object-contain" />
+              <img src={org.logoUrl} alt="" height={40} className="h-10 w-auto max-w-24 shrink-0 rounded bg-white object-contain p-0.5" />
             ) : (
               <span
                 aria-hidden
@@ -61,7 +63,7 @@ async function OrgFrame({ params, children }: Pick<LayoutProps<"/[org]">, "param
               </span>
             )}
             <span className="min-w-0">
-              <span className="block truncate font-display text-lg font-bold uppercase leading-tight tracking-wide">
+              <span className="line-clamp-2 font-display text-lg font-bold uppercase leading-tight tracking-wide">
                 {org.name}
               </span>
               {org.tagline ? <span className="block truncate text-xs opacity-80">{org.tagline}</span> : null}
@@ -76,6 +78,13 @@ async function OrgFrame({ params, children }: Pick<LayoutProps<"/[org]">, "param
         <div className="mx-auto max-w-3xl space-y-1 px-4 py-5 text-center text-xs">
           {org.tagline ? <p className="font-display text-base font-bold uppercase tracking-wide">{org.tagline}</p> : null}
           {org.hashtags.length ? <p className="opacity-90">{org.hashtags.join("  ")}</p> : null}
+          {facebook ? (
+            <p className="pt-1">
+              <a href={facebook} target="_blank" rel="noopener noreferrer" className="inline-block py-2 font-semibold underline">
+                Follow {org.shortName ?? org.name} on Facebook
+              </a>
+            </p>
+          ) : null}
           <p className="pt-2 opacity-70">
             Tables are calculated from confirmed results · {publicEnv.NEXT_PUBLIC_APP_NAME}
           </p>

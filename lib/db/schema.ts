@@ -213,6 +213,8 @@ export const competitions = pgTable(
     area: text("area"),
     slogan: text("slogan"),
     logoUrl: text("logo_url"),
+    /** The competition brand's own pages (e.g. the QDL Facebook page), shown alongside the org's. */
+    socialLinks: jsonb("social_links").$type<SocialLinks>().notNull().default({}),
     /** Validated with lib/rules (zod) on every read and write. */
     rules: jsonb("rules").$type<CompetitionRules>().notNull(),
     /** Planned number of league matches, for "X of N results entered" (null = unknown). */

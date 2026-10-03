@@ -4,6 +4,8 @@ import { ORGANISATIONS_TAG, orgTag } from "@/lib/cache/tags";
 import { getDb } from "@/lib/db/client";
 import { organisations, type SocialLinks } from "@/lib/db/schema";
 
+export type { SocialLinks };
+
 /**
  * An organisation scope. Every tenant query takes one as its first argument, and it
  * can only be obtained from `resolveOrgBySlug` (public) or `getCurrentAdmin` (admin),

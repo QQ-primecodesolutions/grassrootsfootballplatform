@@ -53,7 +53,7 @@ export function brandOf(org: PublicOrganisation, data: CompetitionData): Graphic
     hashtags: org.hashtags,
     // Icons only for links the organisation has actually supplied.
     social: {
-      facebook: Boolean(org.socialLinks.facebook),
+      facebook: Boolean(org.socialLinks.facebook || c.socialLinks.facebook),
       instagram: Boolean(org.socialLinks.instagram),
       x: Boolean(org.socialLinks.x),
     },

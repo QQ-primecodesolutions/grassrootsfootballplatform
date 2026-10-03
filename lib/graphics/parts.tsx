@@ -39,6 +39,15 @@ export function wrapLines(text: string, maxChars: number): string[] {
 }
 
 /**
+ * Largest font size (≤ max) at which the longest word of \`text\` fits in \`width\` px, so a name
+ * wraps between words, never inside one. \`charEm\`: average caps width in em (see \`Words\`).
+ */
+export function fitFontSize(text: string, width: number, max: number, charEm = 0.46): number {
+  const longest = Math.max(1, ...text.split(/\s+/).map((w) => w.length));
+  return Math.min(max, Math.floor(width / (longest * charEm)));
+}
+
+/**
  * Upper-case text that may wrap within `width` px. Lines are broken here rather than by
  * Satori so each line can use no-break spaces (see `upper`). `charEm` is the average
  * character width in em (Barlow Condensed caps are ~0.4em, plus any letter-spacing).
@@ -491,38 +500,47 @@ export function Hashtags({ brand, fontSize }: { brand: GraphicBrand; fontSize: n
   );
 }
 
-/** Social icons, only for links the organisation has supplied (hidden otherwise). */
+/** The Facebook "f" glyph (24×24 viewBox). */
+const FACEBOOK_F =
+  "M15.12 5.32H17V2.14A26.11 26.11 0 0 0 14.26 2c-2.72 0-4.58 1.66-4.58 4.7v2.62H6.61v3.56h3.07V22h3.68v-9.12h3.06l.46-3.56h-3.52V7.05c0-1.03.28-1.73 1.76-1.73z";
+
+/** Social icons, only for links the organisation or competition supplied (hidden otherwise). */
 export function SocialIcons({ brand, size }: { brand: GraphicBrand; size: number }) {
-  const icons = [
-    brand.social.facebook ? "f" : null,
-    brand.social.instagram ? "IG" : null,
-    brand.social.x ? "X" : null,
-  ].filter((x): x is string => x !== null);
-  if (!icons.length) return null;
-  return (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      {icons.map((t) => (
-        <div
-          key={t}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: size,
-            height: size,
-            margin: `0 ${size * 0.35}px`,
-            borderRadius: size / 2,
-            backgroundColor: "#111111",
-            color: "#FFFFFF",
-            fontSize: size * 0.5,
-            fontWeight: 800,
-          }}
-        >
-          {t}
-        </div>
-      ))}
+  const circle = (key: string, background: string, child: ReactNode) => (
+    <div
+      key={key}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: size,
+        height: size,
+        margin: `0 ${size * 0.35}px`,
+        borderRadius: size / 2,
+        backgroundColor: background,
+        color: "#FFFFFF",
+        fontSize: size * 0.45,
+        fontWeight: 800,
+      }}
+    >
+      {child}
     </div>
   );
+  const icons = [
+    brand.social.facebook
+      ? circle(
+          "facebook",
+          "#1877F2",
+          <svg width={size * 0.62} height={size * 0.62} viewBox="0 0 24 24">
+            <path d={FACEBOOK_F} fill="#FFFFFF" />
+          </svg>,
+        )
+      : null,
+    brand.social.instagram ? circle("instagram", "#111111", "IG") : null,
+    brand.social.x ? circle("x", "#111111", "X") : null,
+  ].filter((x) => x !== null);
+  if (!icons.length) return null;
+  return <div style={{ display: "flex", justifyContent: "center" }}>{icons}</div>;
 }
 
 /** Sponsor strip along the bottom edge: logos where supplied, otherwise names. */

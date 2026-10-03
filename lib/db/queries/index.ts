@@ -7,6 +7,7 @@ export {
   resolveOrgBySlug,
   type OrgScope,
   type PublicOrganisation,
+  type SocialLinks,
 } from "./organisations";
 export {
   findMatchCompetitionSlug,

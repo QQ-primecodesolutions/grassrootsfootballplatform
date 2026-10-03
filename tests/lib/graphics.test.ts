@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CompetitionData, PublicOrganisation } from "@/lib/db/queries";
 import { fixturesModel, latestResultDate, matchCardModel, matchdayModel, nextFixtureDate } from "@/lib/graphics/model";
-import { wrapLines } from "@/lib/graphics/parts";
+import { fitFontSize, wrapLines } from "@/lib/graphics/parts";
 import { CACHE_UNVERSIONED, CACHE_VERSIONED, notFoundResponse, pngResponse } from "@/lib/graphics/response";
 import { parseGraphicQuery } from "@/lib/graphics/sizes";
 import { graphicPath, graphicVersion } from "@/lib/graphics/urls";
@@ -93,6 +93,7 @@ function data(entries: string[], matches: PublicMatch[]): CompetitionData {
       area: "Tseki",
       slogan: "It's time to shine",
       logoUrl: null,
+      socialLinks: {},
       isFeatured: true,
       seasonName: "2026",
       rules: DEFAULT_RULES,
@@ -154,6 +155,13 @@ describe("matchday graphic model", () => {
     const model = matchdayModel(org, data(["A", "B"], [match("A", "B", { date: "2026-08-01" })]), null);
     expect(model).toMatchObject({ date: null, dateLabel: null, results: [] });
     expect(model.rows).toHaveLength(2);
+  });
+
+  it("shows the Facebook icon when only the competition brand has a page", () => {
+    const d = data(["A"], []);
+    const withQdl = { ...d, competition: { ...d.competition, socialLinks: { facebook: "https://www.facebook.com/x" } } };
+    expect(matchdayModel({ ...org, socialLinks: {} }, d, null).brand.social.facebook).toBe(false);
+    expect(matchdayModel({ ...org, socialLinks: {} }, withQdl, null).brand.social.facebook).toBe(true);
   });
 
   it("carries branding, and social icons only for supplied links", () => {
@@ -263,6 +271,14 @@ describe("graphic query, URLs and responses", () => {
     expect(short.headers.get("Cache-Control")).toBe(CACHE_UNVERSIONED);
     expect(short.headers.get("Content-Disposition")).toBeNull();
     expect(notFoundResponse().headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it("sizes team names by their longest word, so they wrap between words", () => {
+    // Regression: names without an "s" were sized as one long word.
+    expect(fitFontSize("Remember Matoota FC", 234, 88)).toBe(fitFontSize("REMEMBER", 234, 88));
+    expect(fitFontSize("Remember Matoota FC", 234, 88)).toBe(63);
+    expect(fitFontSize("Passion FC", 234, 88)).toBe(72);
+    expect(fitFontSize("FC", 234, 88)).toBe(88);
   });
 
   it("wraps long names by words", () => {

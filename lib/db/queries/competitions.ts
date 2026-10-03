@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { competitionTag, matchTag, orgTag, teamTag } from "@/lib/cache/tags";
 import { getDb } from "@/lib/db/client";
 import {
+  type SocialLinks,
   clubs,
   competitionEntries,
   competitionSponsors,
@@ -28,6 +29,7 @@ export type CompetitionSummary = {
   area: string | null;
   slogan: string | null;
   logoUrl: string | null;
+  socialLinks: SocialLinks;
   isFeatured: boolean;
   seasonName: string;
 };
@@ -49,6 +51,7 @@ const summaryColumns = {
   area: competitions.area,
   slogan: competitions.slogan,
   logoUrl: competitions.logoUrl,
+  socialLinks: competitions.socialLinks,
   isFeatured: competitions.isFeatured,
   seasonName: seasons.name,
 };

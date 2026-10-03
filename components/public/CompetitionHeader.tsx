@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { competitionSubtitle } from "@/lib/match/public";
+import { facebookUrl } from "@/lib/public/links";
 import type { CompetitionSummary } from "@/lib/db/queries";
 
 export type CompetitionTab = "table" | "fixtures" | "results";
@@ -21,6 +22,7 @@ export function CompetitionHeader({
     { key: "results", label: "Results", href: `${base}/results` },
   ];
   const subtitle = competitionSubtitle(competition);
+  const facebook = facebookUrl(competition.socialLinks);
 
   return (
     <header className="mb-4">
@@ -29,6 +31,11 @@ export function CompetitionHeader({
         {[subtitle, competition.seasonName].filter(Boolean).join(" · ")}
         {competition.slogan ? <span className="italic"> — {competition.slogan}</span> : null}
       </p>
+      {facebook ? (
+        <a href={facebook} target="_blank" rel="noopener noreferrer" className="inline-block py-1 text-sm font-semibold underline">
+          League page on Facebook
+        </a>
+      ) : null}
       <nav aria-label="Competition sections" className="mt-3 grid grid-cols-3 gap-1 rounded-lg bg-black/5 p-1">
         {tabs.map((t) => (
           <Link
