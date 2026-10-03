@@ -16,7 +16,7 @@ Contents: [Local setup](#local-setup) · [Environment variables](#environment-va
 
 Requirements:
 
-- Node.js 22 or newer
+- Node.js 22 (production runs 22.x, pinned in `package.json`)
 - pnpm 12 (`npm i -g pnpm@12`, or `corepack enable`)
 - Git
 - A Postgres database: a Neon branch (Option A) or Docker (Option B)
@@ -118,18 +118,28 @@ account. Neon can also be created from inside Vercel.
 
 1. In the Vercel project, open **Storage** (or the **Marketplace**) and add **Neon**. Create a new
    database, or link an existing Neon project.
-2. Connect it to **Production** and **Preview** (and **Development** if you want
-   `vercel env pull`).
-   - This sets `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct), among others.
-3. Optional: turn on Neon's **preview branches**. Each preview deployment then gets its own
-   copy of the database, and the build's `pnpm db:migrate` applies any new migrations to that
-   copy.
+   - **Choose the region when you create it**, because it can't easily be changed later.
+     **AWS Europe (Frankfurt)** is the closest to South Africa.
+   - Set Vercel's function region to match, under **Settings → Functions → Region**
+     (`fra1` for Frankfurt).
+2. In the **Configure** dialog:
+   - **Environments**: Production and Preview.
+   - **Create Database Branch For Deployment**: tick **Preview** only. Never tick Production:
+     every production deploy would then get a new branch, and live results would be split
+     across branches.
+   - **Custom Environment Variable Prefix**: `DATABASE`. This gives `DATABASE_URL` (pooled) and
+     `DATABASE_URL_UNPOOLED` (direct), which the app and migrations read. The suggested
+     `STORAGE` prefix would make the build fail with "DATABASE_URL … is missing".
+   - **Sensitive**: leave it on. Builds can still read the values; to seed, copy the connection
+     string from the Neon console instead.
+3. With preview branches, each preview deployment gets its own copy of the database, and the
+   build's `pnpm db:migrate` applies any new migrations to that copy.
 
 ### 3. Deploy
 
 Redeploy (Deployments → ⋯ → Redeploy), or push a commit. The build:
 
-1. installs with the pinned pnpm (Corepack), using Node 24 (from `engines`)
+1. installs with the pinned pnpm, on Node 22 (`engines` in `package.json`)
 2. runs `pnpm db:migrate`, which creates or updates the tables in that environment's database
 3. runs `pnpm build`, which prerenders the home page and needs the database
 
