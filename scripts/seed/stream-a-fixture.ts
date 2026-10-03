@@ -6,7 +6,8 @@ import type { SeedResult } from "./data/batho-pele-stream-a";
 /**
  * tests/fixtures/stream-a-results.json: the full Stream A results transcribed
  * from the organiser's posts. Used by the reconciliation test and by
- * `pnpm db:seed:stream-a-results` (which refuses to load it while unverified).
+ * `pnpm db:seed:stream-a-results` (which refuses to load it while unverified, and loads
+ * results marked `pending` as provisional).
  */
 
 export const STREAM_A_FIXTURE_PATH = "tests/fixtures/stream-a-results.json";
@@ -22,6 +23,8 @@ const resultSchema = z.object({
   venue: z.string().min(1).optional(),
   outcome: z.enum(["normal", "awarded"]).optional(),
   notes: z.string().optional(),
+  /** Not yet confirmed by the organiser: loaded as provisional, so it stays private and doesn't count. */
+  pending: z.boolean().optional(),
   source: z.string().optional(),
 });
 

@@ -6,7 +6,8 @@
  * home, away and SAST date) are skipped unless --overwrite-results.
  *
  * REAL ORGANISATION DATA: refuses to run while the fixture is marked
- * "unverified": true. Flip it to false once the organiser confirms the results.
+ * "unverified": true. Results marked "pending" are loaded as provisional (private, not counted)
+ * and are confirmed or corrected later in /admin.
  */
 import { createRequire } from "node:module";
 
@@ -45,6 +46,12 @@ try {
     `Stream A: ${fixture.results.length} results in fixture — inserted ${counters.matchesInserted}, ` +
       `updated ${counters.matchesUpdated}, unchanged ${counters.matchesSkipped}.`,
   );
+  const pendingCount = fixture.results.filter((r) => r.pending).length;
+  if (pendingCount) {
+    console.log(
+      `${pendingCount} result(s) marked "pending" were loaded as provisional: they stay private and don't count until confirmed in /admin.`,
+    );
+  }
   if (fixture.unverified) console.warn("Warning: loaded UNVERIFIED results (--allow-unverified).");
 } finally {
   await close();

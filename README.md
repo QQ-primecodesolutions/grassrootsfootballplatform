@@ -89,9 +89,13 @@ with production values. Next.js and the scripts also read that file, so `pnpm bu
     database.
 - `pnpm db:seed` loads only the three 15 August Batho Pele results. The full Stream A results
   (transcribed from the organiser's posts) are in `tests/fixtures/stream-a-results.json`.
-  - Once the organiser confirms them, set `"unverified": false` in that file and run
-    `pnpm db:seed:stream-a-results`.
-  - Until then the command refuses to run, unless you pass `--allow-unverified`. That flag is
+  - Load them with `pnpm db:seed:stream-a-results` (on production: set `DATABASE_URL` as in
+    [Seed production](#4-seed-production-once), then redeploy so the pages refresh).
+  - Results marked `"pending": true` (currently Round 5 Samba Boys v Passion) load as
+    *provisional*: they stay private and don't count. Once the organiser confirms the score, open
+    the match in **/admin → Results**, correct it if needed, and tap *Confirm & publish*.
+  - If the file is ever marked `"unverified": true`, the command refuses to run unless you pass
+    `--allow-unverified`. That flag is
     for throwaway test databases only.
 - `pnpm db:studio` opens Drizzle Studio to browse the data.
 

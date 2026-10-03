@@ -160,6 +160,17 @@ describe("loading the full Stream A fixture (pnpm db:seed:stream-a-results)", ()
     await db.transaction((tx) => seedBathoPele(tx, { overwriteResults: false, counters: again, results }));
     expect(again).toEqual({ matchesInserted: 0, matchesUpdated: 0, matchesSkipped: 21 });
 
+    // The one "pending" result (Round 5 Samba Boys v Passion) is provisional: private and not counted.
+    const states = await db
+      .select({ state: matches.resultState, confirmedAt: matches.confirmedAt, notes: matches.notes })
+      .from(matches)
+      .where(eq(matches.competitionId, await competitionId(STREAM_A_SLUG)));
+    expect(states.filter((s) => s.state === "confirmed")).toHaveLength(20);
+    const provisional = states.filter((s) => s.state === "provisional");
+    expect(provisional).toEqual([
+      { state: "provisional", confirmedAt: null, notes: "Result awaiting confirmation from the organiser." },
+    ]);
+
     const streamA = await competitionId(STREAM_A_SLUG);
     expect(await count(matches, eq(matches.competitionId, streamA))).toBe(21);
 

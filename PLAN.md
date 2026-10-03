@@ -65,6 +65,12 @@ the rest of the document, this section wins.
   - Vercel runs `pnpm db:migrate && pnpm build` (`vercel.json`), with Corepack enabled for pnpm 12.
   - Production is seeded once with `pnpm db:seed --no-demo`.
 
+- 2026-10-03: the owner released the Stream A fixture (`"unverified": false`). Its 20
+  organiser-published results load as confirmed. Round 5 Samba Boys v Passion (3–0, inferred) is
+  marked `"pending"` and loads as **provisional**: private, not counted, and confirmed or corrected in
+  admin once the organiser answers. Until then the live table differs from the organiser's 15 Aug
+  table by that one match.
+
 **Changes**
 - A. CHECK: `outcome_type = 'walkover'` ⇒ `status = 'completed'`.
 - B. Graphics route handlers send `Cache-Control: public, s-maxage=…, stale-while-revalidate=…`

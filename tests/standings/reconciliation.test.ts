@@ -10,7 +10,8 @@ import { PUBLISHED_TABLE_2026_08_15 } from "../fixtures/published-table-2026-08-
 /**
  * Reconciliation: computing the table from the 21 real Stream A results must
  * reproduce the table Batho Pele published "as at 15 August 2026", cell for cell.
- * The fixture is still marked unverified (round 5 Samba–Passion awaits the organiser).
+ * Round 5 Samba–Passion (3–0) is inferred and still awaits the organiser, so it's marked
+ * "pending" in the fixture; this test checks that the inference reproduces their table.
  */
 
 const entries = STREAM_A_TEAMS.map((t) => ({ entryId: t.name, name: t.name }));

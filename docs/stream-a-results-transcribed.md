@@ -1,6 +1,6 @@
 # Open Stream A (Tseki) results: transcribed from the organiser's matchday graphics (to verify)
 
-**Status: unverified. NOT used by the seed.** This transcribes the results panels in
+**Status (2026-10-03): released; loaded by `pnpm db:seed:stream-a-results`. Round 5 Samba Boys v Passion is pending (provisional) until the organiser confirms.** This transcribes the results panels in
 `docs/reference/`, so the organiser (or you) can confirm them before they go into
 `scripts/seed/data/batho-pele-stream-a.ts`.
 

@@ -125,8 +125,9 @@ export async function seedBathoPele(
         homeGoals: r.homeGoals,
         awayGoals: r.awayGoals,
         winnerEntryId: r.homeGoals > r.awayGoals ? homeEntryId : r.awayGoals > r.homeGoals ? awayEntryId : null,
-        resultState: "confirmed",
-        confirmedAt: now,
+        // A pending result is provisional: private, not counted, confirmed later in admin.
+        resultState: r.pending ? "provisional" : "confirmed",
+        confirmedAt: r.pending ? null : now,
         notes: r.notes ?? null,
       },
       { overwrite: opts.overwriteResults, counters: opts.counters },

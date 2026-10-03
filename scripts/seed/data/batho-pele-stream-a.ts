@@ -21,6 +21,8 @@ export type SeedResult = {
   venue?: string;
   outcome?: "normal" | "awarded";
   notes?: string;
+  /** Not yet confirmed by the organiser: stored as a provisional (private) result. */
+  pending?: boolean;
 };
 
 export const STREAM_A_TEAMS = [
