@@ -9,7 +9,11 @@ const ITEMS = [
   { href: "/admin/results", label: "Results", match: (p: string) => p.startsWith("/admin/results") },
   { href: "/admin/fixtures/paste", label: "Paste", match: (p: string) => p.startsWith("/admin/fixtures/paste") },
   { href: "/admin/fixtures/new", label: "Fixture", match: (p: string) => p.startsWith("/admin/fixtures/new") },
-  { href: "/admin/teams", label: "Teams", match: (p: string) => p.startsWith("/admin/teams") },
+  {
+    href: "/admin/competitions",
+    label: "Setup",
+    match: (p: string) => p.startsWith("/admin/competitions") || p.startsWith("/admin/teams"),
+  },
 ];
 
 /**

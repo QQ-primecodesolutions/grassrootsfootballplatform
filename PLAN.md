@@ -87,6 +87,15 @@ the rest of the document, this section wins.
   - New organisations start unlisted (reachable by link, not shown on "/").
   - Competition, season and team setup screens are Milestone 8.
 
+- Milestone 8 (setup screens), 2026-10-08, approved by the owner. Admins create league and knockout
+  competitions (season by name), enter teams (paste a list or tick existing ones), set rules, and
+  record points adjustments.
+  - Rules gain `confirmed` (default false). This replaces the fixed Stream A assumption list with
+    per-competition reminders.
+  - One featured competition per organisation.
+  - The seed re-run now refreshes only logos and social links, so admin edits survive.
+  - Group stages are deferred.
+
 **Changes**
 - A. CHECK: `outcome_type = 'walkover'` ⇒ `status = 'completed'`.
 - B. Graphics route handlers send `Cache-Control: public, s-maxage=…, stale-while-revalidate=…`

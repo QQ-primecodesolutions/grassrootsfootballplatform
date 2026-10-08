@@ -56,6 +56,7 @@ describe("competition rules", () => {
       points: { win: 3, draw: 1, loss: 0 },
       tieBreakers: ["points", "goalDifference", "goalsFor", "headToHead"],
       walkover: { score: [3, 0], countGoals: true },
+      confirmed: false,
     });
     expect(parseRules({ points: { draw: 2 } }).points).toEqual({ win: 3, draw: 2, loss: 0 });
   });

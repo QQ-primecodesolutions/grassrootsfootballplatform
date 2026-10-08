@@ -234,8 +234,8 @@ Onboarding a new organisation:
 2. **Add an admin**: their name and email. The platform creates a one-time link (valid 7 days).
    Tap **WhatsApp** to send it. They open it, choose a password, and are signed in.
    - The link is shown only once. If it gets lost or expires, tap *New invite link*.
-3. Set up its competition and teams (for now with a seed script, like Batho Pele; screens for this
-   come in the next milestone).
+3. Tap *Work in this org* (or let its admin do it): **Setup → + New competition**, paste the team
+   list, then add fixtures. See [Competitions and teams](#competitions-and-teams).
 
 Forgotten password: on the organisation's Platform page, tap *Password reset link* next to the
 person and send it to them (valid 24 hours). Removing someone signs them out straight away.
@@ -249,6 +249,37 @@ Security:
 - Changing your password (**Account**) signs you out on your other devices. Changing
   `AUTH_SECRET` signs everyone out.
 
+### Competitions and teams
+
+Under **Setup** (bottom bar). A new organisation's admin home shows the same three steps.
+
+1. **+ New competition**: choose **League** (a table) or **Knockout / cup** (rounds, a winner each
+   match), then the name and season.
+   - The link name (public URL) is suggested from the name and season and can't change later.
+   - **Feature on the public home page**: the featured league leads the organisation's page.
+     Only one competition is featured at a time.
+2. **Teams**:
+   - *Add new teams*: paste the list from WhatsApp, one per line. Numbers and bullets are removed,
+     and names that match an existing team are reused instead of duplicated.
+   - *Add existing teams*: tick teams already used in another competition.
+   - A team can be removed only before it has matches in that competition. Edit names, short names
+     and logos under **Teams**.
+3. **Fixtures**: *Paste* or *Fixture* as before. For a cup, put the round (e.g. "Semi-final") in
+   **Round**: the public page groups matches by it.
+4. **Rules** (leagues): points for a win, draw and loss; the tie-breaker order; and the walkover
+   score.
+   - New competitions start with defaults, flagged as **not confirmed**. The admin home keeps
+     reminding you until you tick *The organiser has confirmed these rules*.
+   - Changing a rule recalculates the table straight away.
+5. **Points adjustments** (leagues): deductions or awards announced by the organiser, with the
+   reason and the date they apply from.
+6. **Delete this competition** (bottom of the page): only before it has any matches.
+
+Group stages (groups, then knockouts) aren't supported yet.
+
+Re-running `pnpm db:seed` refreshes only logos and Facebook links. Names, settings and rules
+edited in admin are kept.
+
 ### Day-to-day admin
 - **Results**: tap a match, use the +/− buttons, then *Save provisional* or *Confirm & publish*.
   - A confirmed result is published straight away, and the public table and pages update within
@@ -258,9 +289,9 @@ Security:
 - **Paste**: paste fixtures from WhatsApp, fix any names shown in red, and save. Corrected names
   can be remembered as aliases. Fixtures that already exist are skipped.
 - **Fixture**: add one fixture. Competition, date, time and venue stay filled in for the next one.
-- **Teams**: add or edit teams and their aliases (other spellings).
-- Competitions, team entries, points adjustments, venues and branding are managed through the
-  seed and scripts for now.
+- **Setup**: competitions, their teams, rules and points adjustments (above). **All teams** lists
+  every team with its aliases (other spellings).
+- Venues are created from the fixture forms. Organisation branding is edited by the platform admin.
 
 ## Graphics
 

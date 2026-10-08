@@ -37,7 +37,7 @@ export async function listOrganisationsForPlatform(_p: PlatformScope, db: Db = g
       slug: organisations.slug,
       name: organisations.name,
       listed: organisations.listed,
-      adminCount: sql<number>`(select count(*)::int from ${memberships} where ${memberships.organisationId} = ${organisations.id})`,
+      adminCount: sql<number>`(select count(*)::int from memberships m where m.organisation_id = "organisations"."id")`,
     })
     .from(organisations)
     .orderBy(asc(organisations.name));

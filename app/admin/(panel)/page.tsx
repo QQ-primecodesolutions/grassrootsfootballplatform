@@ -6,7 +6,6 @@ import { PageSkeleton } from "@/components/public/PageSkeleton";
 import { groupAdminMatches } from "@/lib/admin/match-lists";
 import { getCurrentAdmin } from "@/lib/auth";
 import { listAdminMatches, listCompetitionsForAdmin } from "@/lib/db/queries/admin";
-import { RULE_ASSUMPTIONS } from "@/lib/rules";
 import { todaySast } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Home" };
@@ -33,6 +32,23 @@ async function AdminHome() {
         </Link>
       </p>
 
+      {competitions.length === 0 ? (
+        <section className="mt-4 rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5">
+          <h2 className="font-display text-lg font-bold uppercase">Get started</h2>
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm">
+            <li>Create a competition (a league or a cup).</li>
+            <li>Add its teams: paste the list of names.</li>
+            <li>Add fixtures, then enter results after each match.</li>
+          </ol>
+          <Link
+            href="/admin/competitions/new"
+            className="mt-3 block rounded-lg bg-gray-900 px-3 py-4 text-center font-semibold text-white"
+          >
+            + New competition
+          </Link>
+        </section>
+      ) : null}
+
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Link href="/admin/results" className="rounded-lg bg-gray-900 px-3 py-4 text-center font-semibold text-white">
           Enter a result
@@ -43,8 +59,8 @@ async function AdminHome() {
         <Link href="/admin/fixtures/new" className="rounded-lg bg-white px-3 py-4 text-center font-semibold shadow-sm ring-1 ring-black/10">
           Add a fixture
         </Link>
-        <Link href="/admin/teams" className="rounded-lg bg-white px-3 py-4 text-center font-semibold shadow-sm ring-1 ring-black/10">
-          Teams
+        <Link href="/admin/competitions" className="rounded-lg bg-white px-3 py-4 text-center font-semibold shadow-sm ring-1 ring-black/10">
+          Competitions & teams
         </Link>
       </div>
 
@@ -82,14 +98,19 @@ async function AdminHome() {
         </>
       ) : null}
 
-      <details className="mt-6 rounded-lg bg-white p-3 text-sm shadow-sm ring-1 ring-black/5">
-        <summary className="cursor-pointer font-semibold">Competition rules in use (not yet confirmed by the organiser)</summary>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-gray-700">
-          {RULE_ASSUMPTIONS.map((r) => (
-            <li key={r}>{r}</li>
-          ))}
-        </ul>
-      </details>
+      {competitions
+        .filter((c) => c.type === "league" && !c.rulesConfirmed)
+        .map((c) => (
+          <Link
+            key={c.id}
+            href={`/admin/competitions/${c.id}`}
+            className="mt-6 block rounded-lg bg-white p-3 text-sm shadow-sm ring-1 ring-amber-300"
+          >
+            <strong>Rules not yet confirmed</strong> for {c.name}
+            {c.streamLabel ? ` · ${c.streamLabel}` : ""}. The table uses default points and tie-breakers until the
+            organiser confirms them. <span className="font-semibold underline">Check the rules</span>
+          </Link>
+        ))}
     </>
   );
 }

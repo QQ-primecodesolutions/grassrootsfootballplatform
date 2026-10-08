@@ -56,9 +56,11 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 - `lib/rules/`: the competition rules zod schema and its defaults
 - `lib/fixtures-paste/`: pure parser and name matcher for pasted fixtures
 - `lib/db/schema.ts`: the Drizzle schema
-- `lib/db/queries/`: the **only** place that reads or writes tenant data
+- `lib/db/queries/`: the **only** place that reads or writes tenant data (`setup.ts`: competitions,
+  entries, rules, adjustments)
 - `lib/auth/`: session cookie, passwords (scrypt), one-time links, lockout, `getCurrentAdmin()`
 - `lib/platform/`: pure input schemas for the super admin's organisation and invite forms
+- `lib/competitions/`: pure input schemas for competition setup, the rules form and team-list paste
 - `lib/time.ts`: SAST helpers
 - `lib/share/`: caption builders
 - `lib/env.ts`: validated env
@@ -129,6 +131,12 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 - Login lockout (`lib/auth/lockout.ts`): failures are counted per IP in `login_failures`
   (Postgres, because Vercel runs many instances): 5 in 15 min per IP, 100 globally.
 - New organisations start `listed = false`: reachable by link, hidden from "/" until listed.
+- Competition setup (`/admin/competitions`) is owned by admins. The seed only refreshes logos and
+  social links on re-run, so admin edits survive. `rules.confirmed` (default false) drives the
+  "rules not yet confirmed" reminders. Admins can create `league` and `knockout` only;
+  `group_knockout` needs group tables first.
+- Drizzle renders columns unqualified in a single-table select, so a correlated `sql` count
+  subquery must name its tables explicitly (see `lib/db/queries/setup.ts`).
 - Result rules live in `lib/match/result-input.ts` and captions in `lib/share/`. Both are pure and tested.
 
 ## Graphics (`lib/graphics/`)

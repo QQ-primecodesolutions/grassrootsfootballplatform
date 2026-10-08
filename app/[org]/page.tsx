@@ -84,7 +84,8 @@ async function OrgHomePageContent({ params }: Pick<PageProps<"/[org]">, "params"
         )}
       </Section>
 
-      {multi ? (
+      {/* Also when there is no league to feature (e.g. only a cup), so the competition is reachable. */}
+      {multi || !featured ? (
         <Section title="Competitions">
           <ul className="space-y-2">
             {all.map(({ competition: c }) => (

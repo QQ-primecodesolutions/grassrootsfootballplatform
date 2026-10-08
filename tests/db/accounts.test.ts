@@ -175,6 +175,8 @@ describe("organisations", () => {
     expect(await setOrganisationListed(platform, id, true, db)).toBe(true);
     const listed = await listOrganisationsForPlatform(platform, db);
     expect(listed.find((o) => o.id === id)).toMatchObject({ listed: true, adminCount: 0 });
+    // Regression: the count is per organisation (Lerato is an admin of Batho Pele).
+    expect(listed.find((o) => o.id === bpId)).toMatchObject({ adminCount: 1 });
   });
 
   it("updates branding and keeps other social links", async () => {

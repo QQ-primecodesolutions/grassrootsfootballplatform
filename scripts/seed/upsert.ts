@@ -40,13 +40,20 @@ function one<T>(rows: T[], what: string): T {
   return row;
 }
 
+/**
+ * Re-running the seed refreshes only the logo and social links (supplied files and pages).
+ * Everything else is edited in admin (Platform / Competitions) and must survive a re-seed.
+ */
 export async function upsertOrganisation(db: Db, input: OrgInput) {
-  const { slug, ...rest } = input;
+  const { slug } = input;
   return one(
     await db
       .insert(organisations)
       .values(input)
-      .onConflictDoUpdate({ target: organisations.slug, set: rest })
+      .onConflictDoUpdate({
+        target: organisations.slug,
+        set: { logoUrl: input.logoUrl ?? null, socialLinks: input.socialLinks ?? {} },
+      })
       .returning({ id: organisations.id, slug: organisations.slug }),
     `organisation ${slug}`,
   );
@@ -162,12 +169,15 @@ export async function upsertCompetition(
     isFeatured: input.isFeatured ?? false,
     sortOrder: input.sortOrder ?? 0,
   };
-  const { organisationId: _org, slug: _slug, ...set } = values;
+  // As for organisations: settings and rules are admin-owned once the competition exists.
   return one(
     await db
       .insert(competitions)
       .values(values)
-      .onConflictDoUpdate({ target: [competitions.organisationId, competitions.slug], set })
+      .onConflictDoUpdate({
+        target: [competitions.organisationId, competitions.slug],
+        set: { logoUrl: values.logoUrl, socialLinks: values.socialLinks },
+      })
       .returning({ id: competitions.id }),
     `competition ${input.slug}`,
   );

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Competition rules. Every default here is an ASSUMPTION until the organiser
- * confirms it; the admin competition settings must say so (see RULE_ASSUMPTIONS).
+ * confirms it (`confirmed`); the admin screens flag unconfirmed rules (see describeRules).
  */
 
 export const TIE_BREAKERS = ["points", "goalDifference", "goalsFor", "wins", "headToHead"] as const;
@@ -34,6 +34,8 @@ export const competitionRulesSchema = z.object({
       path: ["score"],
     })
     .prefault({}),
+  /** Set by an admin once the organiser has confirmed these rules; until then the UI flags them. */
+  confirmed: z.boolean().default(false),
 });
 
 export type CompetitionRules = z.infer<typeof competitionRulesSchema>;
@@ -45,12 +47,26 @@ export function parseRules(input: unknown): CompetitionRules {
 
 export const DEFAULT_RULES: CompetitionRules = parseRules({});
 
-/** Shown in the admin rules banner until the organiser confirms. */
-export const RULE_ASSUMPTIONS = [
-  "Points: 3 for a win, 1 for a draw, 0 for a loss.",
-  "Tie-breaker order is NOT yet confirmed by the organiser. Until it is, the default is: points, goal difference, goals scored, head-to-head.",
-  "Head-to-head uses a mini-table of matches between the tied teams only (points, then goal difference, then goals scored). Teams still level continue down the tie-breaker list.",
-  "Teams level after every tie-breaker share the same position.",
-  "A walkover counts as a 3–0 win, and those goals count.",
-  "Stream A is a double round-robin (10 rounds).",
-] as const;
+export const TIE_BREAKER_LABELS: Record<TieBreaker, string> = {
+  points: "points",
+  goalDifference: "goal difference",
+  goalsFor: "goals scored",
+  wins: "wins",
+  headToHead: "head-to-head",
+};
+
+/** Plain-language summary of a competition's rules, for the admin screens. */
+export function describeRules(rules: CompetitionRules): string[] {
+  const lines = [
+    `Points: ${rules.points.win} for a win, ${rules.points.draw} for a draw, ${rules.points.loss} for a loss.`,
+    `Teams level on points are separated by: ${rules.tieBreakers.slice(1).map((t) => TIE_BREAKER_LABELS[t]).join(", ") || "nothing (they share the position)"}.`,
+    `A walkover counts as a ${rules.walkover.score[0]}–${rules.walkover.score[1]} win${rules.walkover.countGoals ? ", and those goals count" : ", but the goals don't count"}.`,
+  ];
+  if (rules.tieBreakers.includes("headToHead")) {
+    lines.push(
+      "Head-to-head uses a mini-table of matches between the tied teams only (points, then goal difference, then goals scored). Teams still level continue down the list.",
+    );
+  }
+  lines.push("Teams level after every tie-breaker share the same position.");
+  return lines;
+}

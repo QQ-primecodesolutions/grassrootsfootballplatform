@@ -12,6 +12,7 @@ import {
   venues,
 } from "@/lib/db/schema";
 import { normalizeTeamName, slugify } from "@/lib/fixtures-paste/normalize";
+import { parseRules } from "@/lib/rules";
 import type { MatchStatus, OutcomeType, ResultState } from "@/lib/standings";
 import { unsafeOrgScope, type OrgScope } from "./organisations";
 
@@ -54,6 +55,7 @@ export type AdminCompetition = {
   area: string | null;
   seasonName: string;
   expectedMatchCount: number | null;
+  rulesConfirmed: boolean;
   confirmedCount: number;
   entries: AdminEntry[];
 };
@@ -69,6 +71,7 @@ export async function listCompetitionsForAdmin(scope: OrgScope, db: Db = getDb()
       area: competitions.area,
       seasonName: seasons.name,
       expectedMatchCount: competitions.expectedMatchCount,
+      rules: competitions.rules,
       confirmedCount: sql<number>`(
         select count(*)::int from ${matches}
         where ${matches.competitionId} = ${competitions.id}
@@ -100,8 +103,9 @@ export async function listCompetitionsForAdmin(scope: OrgScope, db: Db = getDb()
   const aliasesByTeam = new Map<string, string[]>();
   for (const a of aliasRows) aliasesByTeam.set(a.teamId, [...(aliasesByTeam.get(a.teamId) ?? []), a.alias]);
 
-  return comps.map((c) => ({
+  return comps.map(({ rules, ...c }) => ({
     ...c,
+    rulesConfirmed: parseRules(rules).confirmed,
     entries: entryRows
       .filter((e) => e.competitionId === c.id)
       .map(({ competitionId: _c, ...e }) => ({ ...e, aliases: aliasesByTeam.get(e.teamId) ?? [] })),
