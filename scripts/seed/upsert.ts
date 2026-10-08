@@ -208,28 +208,35 @@ export async function upsertEntries(
   return map;
 }
 
+/**
+ * Link the seed's sponsors to a competition, but only while it has none: once it has sponsors,
+ * they're managed in admin (Setup → competition → Sponsors) and a re-seed leaves them alone.
+ */
 export async function upsertSponsors(
   db: Db,
   organisationId: string,
   competitionId: string,
   names: string[],
 ) {
+  const linked = await db
+    .select({ sponsorId: competitionSponsors.sponsorId })
+    .from(competitionSponsors)
+    .where(eq(competitionSponsors.competitionId, competitionId))
+    .limit(1);
+  if (linked.length) return;
   for (const [i, name] of names.entries()) {
     const sponsor = one(
       await db
         .insert(sponsors)
         .values({ organisationId, name, sortOrder: i })
-        .onConflictDoUpdate({ target: [sponsors.organisationId, sponsors.name], set: { sortOrder: i } })
+        .onConflictDoUpdate({ target: [sponsors.organisationId, sponsors.name], set: { name } })
         .returning({ id: sponsors.id }),
       `sponsor ${name}`,
     );
     await db
       .insert(competitionSponsors)
       .values({ organisationId, competitionId, sponsorId: sponsor.id, sortOrder: i })
-      .onConflictDoUpdate({
-        target: [competitionSponsors.competitionId, competitionSponsors.sponsorId],
-        set: { sortOrder: i },
-      });
+      .onConflictDoNothing();
   }
 }
 

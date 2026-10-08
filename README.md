@@ -273,7 +273,11 @@ Under **Setup** (bottom bar). A new organisation's admin home shows the same thr
    - Changing a rule recalculates the table straight away.
 5. **Points adjustments** (leagues): deductions or awards announced by the organiser, with the
    reason and the date they apply from.
-6. **Delete this competition** (bottom of the page): only before it has any matches.
+6. **Sponsors**: the names (or logos) along the bottom of the competition's graphics, up to 5.
+   - Pick one of the organisation's sponsors, or add a new one with an optional logo link.
+   - Use the arrows to set the order. A sponsor's logo is shared by every competition it's on.
+   - With no sponsors, the graphics end at the hashtags.
+7. **Delete this competition** (bottom of the page): only before it has any matches.
 
 **Friendlies** (and matches in other organisers' tournaments): create one competition per season,
 e.g. "Friendlies", with the **Friendlies** format. There's no table, and a level score is fine.
@@ -282,8 +286,8 @@ league are just teams: paste their names. Their matches never affect a league ta
 
 Group stages (groups, then knockouts) aren't supported yet.
 
-Re-running `pnpm db:seed` refreshes only logos and Facebook links. Names, settings and rules
-edited in admin are kept.
+Re-running `pnpm db:seed` refreshes only logos and Facebook links. Names, settings, rules and
+sponsors edited in admin are kept.
 
 ### Day-to-day admin
 - **Results**: tap a match, use the +/− buttons, then *Save provisional* or *Confirm & publish*.

@@ -181,3 +181,27 @@ export const adjustmentSchema = z.object({
 });
 
 export type AdjustmentInput = z.infer<typeof adjustmentSchema>;
+
+/** Add a sponsor to a competition: pick an existing one, or type a new name (and optional logo). */
+export const sponsorAddSchema = z
+  .object({
+    sponsorId: z.string().default(""),
+    name: z.string().trim().max(60).default(""),
+    logoUrl,
+  })
+  .transform((v, ctx) => {
+    if (v.sponsorId && v.sponsorId !== "__new") {
+      if (!z.uuid().safeParse(v.sponsorId).success) {
+        ctx.addIssue({ code: "custom", message: "Unknown sponsor" });
+        return z.NEVER;
+      }
+      return { sponsorId: v.sponsorId };
+    }
+    if (v.name.length < 2) {
+      ctx.addIssue({ code: "custom", message: "Type the sponsor's name as it should appear" });
+      return z.NEVER;
+    }
+    return { name: v.name, logoUrl: v.logoUrl };
+  });
+
+export const sponsorLogoSchema = z.object({ sponsorId: z.uuid(), logoUrl });

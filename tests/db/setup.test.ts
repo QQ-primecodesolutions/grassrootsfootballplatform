@@ -5,17 +5,23 @@ import type { Db } from "@/lib/db/client";
 import type { OrgScope } from "@/lib/db/queries";
 import { adminScopeForOrg, insertFixtures, listTeamsForAdmin } from "@/lib/db/queries/admin";
 import {
+  addCompetitionSponsor,
   addEntries,
   addPointsAdjustment,
   createCompetition,
   createTeamsAndEnter,
   deleteCompetition,
   getCompetitionForSetup,
+  listCompetitionSponsors,
   listCompetitionsForSetup,
+  listOrgSponsors,
+  moveCompetitionSponsor,
+  removeCompetitionSponsor,
   removeEntry,
   removePointsAdjustment,
   updateCompetition,
   updateCompetitionRules,
+  updateSponsorLogo,
 } from "@/lib/db/queries/setup";
 import { competitions, organisations } from "@/lib/db/schema";
 import { DEFAULT_RULES } from "@/lib/rules";
@@ -176,5 +182,41 @@ describe("friendlies", () => {
     const data = (await getCompetitionForSetup(bp, id, db))!;
     expect(data.competition).toMatchObject({ type: "friendly", expectedMatchCount: null });
     expect(data.entries).toHaveLength(2);
+  });
+});
+
+describe("sponsors", () => {
+  it("adds, orders, limits and removes a competition's sponsors, and keeps them on re-seed", async () => {
+    const [streamA] = await db.select().from(competitions).where(eq(competitions.slug, "qdl-open-stream-a-2026"));
+    const id = streamA!.id;
+    const names = async () => (await listCompetitionSponsors(bp, id, db)).map((s) => s.name);
+    expect(await names()).toEqual(["Mayday Alarms", "RE/MAX Maluti", "Prestige", "Next Business"]);
+
+    expect(await addCompetitionSponsor(bp, id, { name: "Maluti Bakery", logoUrl: null }, db)).toBe("added");
+    expect(await addCompetitionSponsor(bp, id, { name: "One Too Many", logoUrl: null }, db)).toBe("full");
+    const bakery = (await listCompetitionSponsors(bp, id, db)).find((s) => s.name === "Maluti Bakery")!;
+    expect(await moveCompetitionSponsor(bp, id, bakery.sponsorId, -1, db)).toBe(true);
+    expect(await names()).toEqual(["Mayday Alarms", "RE/MAX Maluti", "Prestige", "Maluti Bakery", "Next Business"]);
+
+    const prestige = (await listCompetitionSponsors(bp, id, db)).find((s) => s.name === "Prestige")!;
+    expect(await removeCompetitionSponsor(demo, id, prestige.sponsorId, db)).toBe(false);
+    expect(await removeCompetitionSponsor(bp, id, prestige.sponsorId, db)).toBe(true);
+    expect(await updateSponsorLogo(bp, bakery.sponsorId, "https://example.com/bakery.png", db)).toBe(true);
+    expect(await updateSponsorLogo(demo, bakery.sponsorId, null, db)).toBe(false);
+
+    // Re-seeding doesn't bring Prestige back or change the order.
+    await seedAll(db);
+    expect(await names()).toEqual(["Mayday Alarms", "RE/MAX Maluti", "Maluti Bakery", "Next Business"]);
+    expect((await listCompetitionSponsors(bp, id, db))[2]!.logoUrl).toBe("https://example.com/bakery.png");
+  });
+
+  it("reuses an organisation's sponsor on another competition, and only its own sponsors", async () => {
+    const friendlies = (await listCompetitionsForSetup(bp, db)).find((c) => c.slug === "friendlies-2026")!;
+    const bakery = (await listOrgSponsors(bp, db)).find((s) => s.name === "Maluti Bakery")!;
+    expect(await addCompetitionSponsor(bp, friendlies.id, { sponsorId: bakery.id }, db)).toBe("added");
+    expect(await addCompetitionSponsor(bp, friendlies.id, { sponsorId: bakery.id }, db)).toBe("already");
+    expect(await addCompetitionSponsor(demo, friendlies.id, { sponsorId: bakery.id }, db)).toBe("not-found");
+    const demoSponsor = (await listOrgSponsors(demo, db))[0]!;
+    expect(await addCompetitionSponsor(bp, friendlies.id, { sponsorId: demoSponsor.id }, db)).toBe("not-found");
   });
 });

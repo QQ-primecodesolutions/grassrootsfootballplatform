@@ -113,6 +113,12 @@ export async function setPasswordFromLink(_prev: PasswordFormState, formData: Fo
   if (!token.success) return { ok: false, message: "This link isn't valid." };
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the password" };
 
+  try {
+    getAuthEnv();
+  } catch {
+    // Check before using the link, so a misconfigured server never burns a one-time link.
+    return { ok: false, message: "Admin login isn't set up on this server yet. Try again later." };
+  }
   const now = new Date();
   const link = await peekLinkToken(token.data, now);
   if (!link) return { ok: false, message: "This link has expired or was already used. Ask the platform admin for a new one." };

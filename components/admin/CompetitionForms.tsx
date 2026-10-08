@@ -3,11 +3,13 @@
 import { useActionState, useState } from "react";
 import {
   addAdjustmentAction,
+  addSponsorAction,
   addEntriesAction,
   addNewTeamsAction,
   createCompetitionAction,
   updateCompetitionAction,
   updateRulesAction,
+  updateSponsorLogoAction,
   type SetupFormState,
 } from "@/app/admin/(panel)/competitions/actions";
 import { COMPETITION_TYPE_LABELS } from "@/lib/competitions/input";
@@ -345,6 +347,81 @@ export function AdjustmentForm({
       <FormMessage ok={state.ok} message={state.message} />
       <button type="submit" disabled={pending} className={submitClass}>
         {pending ? "Saving…" : "Add adjustment"}
+      </button>
+    </form>
+  );
+}
+
+/** Add a sponsor to the competition's graphics: an existing one, or a new name (+ optional logo). */
+export function AddSponsorForm({
+  competitionId,
+  available,
+}: {
+  competitionId: string;
+  available: { id: string; name: string }[];
+}) {
+  const [state, action, pending] = useActionState(addSponsorAction, initial);
+  const [choice, setChoice] = useState(available.length ? "" : "__new");
+  const isNew = choice === "__new" || !available.length;
+  return (
+    <form action={action} className="space-y-3">
+      <input type="hidden" name="competitionId" value={competitionId} />
+      {available.length ? (
+        <Field label="Sponsor">
+          <select name="sponsorId" value={choice} onChange={(e) => setChoice(e.target.value)} required className={inputClass}>
+            <option value="" disabled>
+              Choose…
+            </option>
+            {available.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+            <option value="__new">+ New sponsor…</option>
+          </select>
+        </Field>
+      ) : (
+        <input type="hidden" name="sponsorId" value="__new" />
+      )}
+      {isNew ? (
+        <>
+          <Field label="Sponsor name" hint="As it should appear on graphics">
+            <input name="name" required maxLength={60} className={inputClass} />
+          </Field>
+          <Field label="Logo link (optional)" hint="A full https:// link. Without one, the name is shown.">
+            <input name="logoUrl" maxLength={500} className={inputClass} />
+          </Field>
+        </>
+      ) : null}
+      <FormMessage ok={state.ok} message={state.message} />
+      <button type="submit" disabled={pending} className={submitClass}>
+        {pending ? "Adding…" : "Add sponsor"}
+      </button>
+    </form>
+  );
+}
+
+/** Change or remove one sponsor's logo link. */
+export function SponsorLogoForm({
+  competitionId,
+  sponsorId,
+  logoUrl,
+}: {
+  competitionId: string;
+  sponsorId: string;
+  logoUrl: string | null;
+}) {
+  const [state, action, pending] = useActionState(updateSponsorLogoAction, initial);
+  return (
+    <form action={action} className="mt-2 space-y-2">
+      <input type="hidden" name="competitionId" value={competitionId} />
+      <input type="hidden" name="sponsorId" value={sponsorId} />
+      <Field label="Logo link" hint="Leave empty to show the name. Used on every competition with this sponsor.">
+        <input name="logoUrl" defaultValue={logoUrl ?? ""} maxLength={500} className={inputClass} />
+      </Field>
+      <FormMessage ok={state.ok} message={state.message} />
+      <button type="submit" disabled={pending} className="h-11 w-full rounded-lg bg-white font-semibold ring-1 ring-black/15 disabled:opacity-60">
+        {pending ? "Saving…" : "Save logo"}
       </button>
     </form>
   );

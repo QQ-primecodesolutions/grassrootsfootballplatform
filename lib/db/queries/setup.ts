@@ -1,6 +1,15 @@
 import { and, asc, desc, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { getDb, type Db } from "@/lib/db/client";
-import { competitionEntries, competitions, matches, pointsAdjustments, seasons, teams } from "@/lib/db/schema";
+import {
+  competitionEntries,
+  competitionSponsors,
+  competitions,
+  matches,
+  pointsAdjustments,
+  seasons,
+  sponsors,
+  teams,
+} from "@/lib/db/schema";
 import { defaultShortName, type AdjustmentInput, type CompetitionCreateInput, type CompetitionUpdateInput } from "@/lib/competitions/input";
 import { parseRules, type CompetitionRules } from "@/lib/rules";
 import { createTeam } from "./admin";
@@ -398,5 +407,138 @@ export async function removePointsAdjustment(
       ),
     )
     .returning({ id: pointsAdjustments.id });
+  return rows.length > 0;
+}
+
+// ---------------------------------------------------------------------------
+// Sponsors: kept per organisation, shown per competition (graphics sponsor strip)
+// ---------------------------------------------------------------------------
+
+/** The sponsor strip fits about this many names or logos. */
+export const MAX_COMPETITION_SPONSORS = 5;
+
+export type SetupSponsor = { sponsorId: string; name: string; logoUrl: string | null };
+
+export async function listOrgSponsors(scope: OrgScope, db: Db = getDb()) {
+  return db
+    .select({ id: sponsors.id, name: sponsors.name, logoUrl: sponsors.logoUrl })
+    .from(sponsors)
+    .where(eq(sponsors.organisationId, scope.id))
+    .orderBy(asc(sponsors.name));
+}
+
+export async function listCompetitionSponsors(scope: OrgScope, competitionId: string, db: Db = getDb()): Promise<SetupSponsor[]> {
+  return db
+    .select({ sponsorId: sponsors.id, name: sponsors.name, logoUrl: sponsors.logoUrl })
+    .from(competitionSponsors)
+    .innerJoin(sponsors, eq(sponsors.id, competitionSponsors.sponsorId))
+    .where(and(eq(competitionSponsors.organisationId, scope.id), eq(competitionSponsors.competitionId, competitionId)))
+    .orderBy(asc(competitionSponsors.sortOrder), asc(sponsors.name));
+}
+
+/** Rewrite sort_order 0..n-1 in the given order. */
+async function renumber(scope: OrgScope, competitionId: string, sponsorIds: string[], db: Db) {
+  for (const [i, sponsorId] of sponsorIds.entries()) {
+    await db
+      .update(competitionSponsors)
+      .set({ sortOrder: i })
+      .where(
+        and(
+          eq(competitionSponsors.organisationId, scope.id),
+          eq(competitionSponsors.competitionId, competitionId),
+          eq(competitionSponsors.sponsorId, sponsorId),
+        ),
+      );
+  }
+}
+
+/**
+ * Show a sponsor on a competition's graphics: an existing sponsor of this organisation, or a new
+ * one by name (reused if the name already exists). Added at the end of the strip.
+ */
+export async function addCompetitionSponsor(
+  scope: OrgScope,
+  competitionId: string,
+  input: { sponsorId: string } | { name: string; logoUrl: string | null },
+  db: Db = getDb(),
+): Promise<"added" | "already" | "full" | "not-found"> {
+  return db.transaction(async (tx) => {
+    if (!(await competitionInOrg(scope, competitionId, tx))) return "not-found";
+    let sponsorId: string;
+    if ("sponsorId" in input) {
+      const [own] = await tx
+        .select({ id: sponsors.id })
+        .from(sponsors)
+        .where(and(eq(sponsors.organisationId, scope.id), eq(sponsors.id, input.sponsorId)))
+        .limit(1);
+      if (!own) return "not-found";
+      sponsorId = own.id;
+    } else {
+      const [row] = await tx
+        .insert(sponsors)
+        .values({ organisationId: scope.id, name: input.name, logoUrl: input.logoUrl })
+        .onConflictDoUpdate({
+          target: [sponsors.organisationId, sponsors.name],
+          // Keep an existing logo unless a new one is given.
+          set: { logoUrl: input.logoUrl ? input.logoUrl : sql`${sponsors.logoUrl}` },
+        })
+        .returning({ id: sponsors.id });
+      sponsorId = row!.id;
+    }
+    const current = await listCompetitionSponsors(scope, competitionId, tx);
+    if (current.some((s) => s.sponsorId === sponsorId)) return "already";
+    if (current.length >= MAX_COMPETITION_SPONSORS) return "full";
+    await tx
+      .insert(competitionSponsors)
+      .values({ organisationId: scope.id, competitionId, sponsorId, sortOrder: current.length });
+    return "added";
+  });
+}
+
+export async function removeCompetitionSponsor(scope: OrgScope, competitionId: string, sponsorId: string, db: Db = getDb()) {
+  return db.transaction(async (tx) => {
+    const removed = await tx
+      .delete(competitionSponsors)
+      .where(
+        and(
+          eq(competitionSponsors.organisationId, scope.id),
+          eq(competitionSponsors.competitionId, competitionId),
+          eq(competitionSponsors.sponsorId, sponsorId),
+        ),
+      )
+      .returning({ sponsorId: competitionSponsors.sponsorId });
+    if (!removed.length) return false;
+    const rest = await listCompetitionSponsors(scope, competitionId, tx);
+    await renumber(scope, competitionId, rest.map((s) => s.sponsorId), tx);
+    return true;
+  });
+}
+
+/** Move a sponsor one place left (-1) or right (+1) on the strip. */
+export async function moveCompetitionSponsor(
+  scope: OrgScope,
+  competitionId: string,
+  sponsorId: string,
+  direction: -1 | 1,
+  db: Db = getDb(),
+): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const ids = (await listCompetitionSponsors(scope, competitionId, tx)).map((s) => s.sponsorId);
+    const i = ids.indexOf(sponsorId);
+    const j = i + direction;
+    if (i < 0 || j < 0 || j >= ids.length) return false;
+    [ids[i], ids[j]] = [ids[j]!, ids[i]!];
+    await renumber(scope, competitionId, ids, tx);
+    return true;
+  });
+}
+
+/** Change a sponsor's logo (affects every competition showing it). Null shows the name instead. */
+export async function updateSponsorLogo(scope: OrgScope, sponsorId: string, logoUrl: string | null, db: Db = getDb()) {
+  const rows = await db
+    .update(sponsors)
+    .set({ logoUrl })
+    .where(and(eq(sponsors.organisationId, scope.id), eq(sponsors.id, sponsorId)))
+    .returning({ id: sponsors.id });
   return rows.length > 0;
 }

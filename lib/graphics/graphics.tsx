@@ -17,6 +17,7 @@ import {
   fitFontSize,
   upper,
   Words,
+  wrapLines,
   type Logos,
 } from "./parts";
 import { GRAPHIC_SIZES, type GraphicSize } from "./sizes";
@@ -270,7 +271,7 @@ export function FixturesGraphic({ model, size, logos }: { model: FixturesModel; 
   const budget = height - fixedHeight(m, brand, { title: true, banner: true }) - m.gap * 2;
   const maxRows = size === "portrait" ? 8 : 6;
   const list = model.fixtures.slice(0, maxRows);
-  const rowHeight = clamp(Math.floor(budget / Math.max(list.length, 1)) - 12, 64, size === "portrait" ? 150 : 120);
+  const rowHeight = fixtureRowHeight(list.length, budget, size);
   return (
     <Frame brand={brand}>
       <Head brand={brand} logos={logos} m={m} width={width} title="Fixtures" banner={banner} />
@@ -287,15 +288,46 @@ export function FixturesGraphic({ model, size, logos }: { model: FixturesModel; 
   );
 }
 
+/** Tallest row allowed for 1, 2, 3 and 4+ fixtures: a short list gets bigger rows, not a gap. */
+const ROW_MAX: Record<Exclude<GraphicSize, "og">, readonly number[]> = {
+  portrait: [270, 220, 180, 150],
+  square: [200, 165, 135, 120],
+};
+
+/** Row height for `count` fixtures sharing `budget` px (12 px between rows). */
+export function fixtureRowHeight(count: number, budget: number, size: Exclude<GraphicSize, "og">): number {
+  const n = Math.max(count, 1);
+  return clamp(Math.floor(budget / n) - 12, 64, ROW_MAX[size][Math.min(n, 4) - 1]!);
+}
+
+/**
+ * One font size for every team name in the list: as large as the row allows, but no word
+ * wider than its column, and no name needing more lines than fit in the row.
+ */
+export function fixtureNameFont(names: string[], rowHeight: number, nameWidthFor: (font: number) => number): number {
+  for (let font = clamp(Math.round(rowHeight * 0.34), 24, 76); font > 24; font -= 2) {
+    const width = nameWidthFor(font);
+    const fits = names.every((name) => {
+      if (fitFontSize(name, width, font) < font) return false;
+      // Same wrapping as <Words> (capitals, 0.44 em per character).
+      const lines = wrapLines(name.toLocaleUpperCase("en-ZA"), Math.max(4, Math.floor(width / (font * 0.44)))).length;
+      return lines * font * 1.05 <= rowHeight * 0.88;
+    });
+    if (fits) return font;
+  }
+  return 24;
+}
+
 function FixtureRows({ brand, fixtures, rowHeight, width }: { brand: GraphicBrand; fixtures: FixturesModel["fixtures"]; rowHeight: number; width: number }) {
   if (!fixtures.length) {
     return (
       <div style={{ display: "flex", justifyContent: "center", fontSize: 40, fontWeight: 700, color: "#555555" }}>No fixtures scheduled</div>
     );
   }
-  const font = clamp(Math.round(rowHeight * 0.36), 24, 46);
   const sideWidth = Math.round(width * 0.22);
-  const nameWidth = (width - 10 - font * 2.1 - sideWidth) / 2 - 20;
+  const nameWidthFor = (f: number) => (width - 10 - f * 2.1 - sideWidth) / 2 - 20;
+  const font = fixtureNameFont(fixtures.flatMap((f) => [f.home, f.away]), rowHeight, nameWidthFor);
+  const nameWidth = nameWidthFor(font);
   const name = (text: string, align: "left" | "right"): ReactNode => (
     <Words
       text={text}

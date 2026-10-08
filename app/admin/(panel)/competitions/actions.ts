@@ -11,11 +11,18 @@ import {
   competitionUpdateSchema,
   parseTeamNames,
   rulesFormSchema,
+  sponsorAddSchema,
+  sponsorLogoSchema,
 } from "@/lib/competitions/input";
 import type { OrgScope } from "@/lib/db/queries";
 import {
+  addCompetitionSponsor,
   addEntries,
   addPointsAdjustment,
+  MAX_COMPETITION_SPONSORS,
+  moveCompetitionSponsor,
+  removeCompetitionSponsor,
+  updateSponsorLogo,
   createCompetition,
   createTeamsAndEnter,
   deleteCompetition,
@@ -139,4 +146,49 @@ export async function removeAdjustmentAction(formData: FormData): Promise<void> 
   if (await removePointsAdjustment(scope, parsed.data.competitionId, parsed.data.adjustmentId)) {
     invalidate(scope, parsed.data.competitionId);
   }
+}
+
+export async function addSponsorAction(prev: SetupFormState, formData: FormData): Promise<SetupFormState> {
+  const { scope } = await getCurrentAdmin();
+  const id = ids.safeParse(Object.fromEntries(formData));
+  const parsed = sponsorAddSchema.safeParse(Object.fromEntries(formData));
+  if (!id.success) return fail(prev, "Unknown competition");
+  if (!parsed.success) return fail(prev, parsed.error.issues[0]?.message ?? "Check the sponsor");
+  const result = await addCompetitionSponsor(scope, id.data.competitionId, parsed.data);
+  if (result === "not-found") return fail(prev, "Unknown competition or sponsor");
+  if (result === "already") return fail(prev, "That sponsor is already on this competition.");
+  if (result === "full") return fail(prev, `The sponsor strip fits ${MAX_COMPETITION_SPONSORS} sponsors. Remove one first.`);
+  invalidate(scope, id.data.competitionId);
+  return done(prev, "Sponsor added. Graphics update within seconds.");
+}
+
+export async function removeSponsorAction(formData: FormData): Promise<void> {
+  const { scope } = await getCurrentAdmin();
+  const parsed = ids.extend({ sponsorId: z.uuid() }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  if (await removeCompetitionSponsor(scope, parsed.data.competitionId, parsed.data.sponsorId)) {
+    invalidate(scope, parsed.data.competitionId);
+  }
+}
+
+export async function moveSponsorAction(formData: FormData): Promise<void> {
+  const { scope } = await getCurrentAdmin();
+  const parsed = ids
+    .extend({ sponsorId: z.uuid(), direction: z.enum(["-1", "1"]).transform((d) => Number(d) as -1 | 1) })
+    .safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  if (await moveCompetitionSponsor(scope, parsed.data.competitionId, parsed.data.sponsorId, parsed.data.direction)) {
+    invalidate(scope, parsed.data.competitionId);
+  }
+}
+
+/** A sponsor's logo is shared by every competition showing it, so the whole org is refreshed. */
+export async function updateSponsorLogoAction(prev: SetupFormState, formData: FormData): Promise<SetupFormState> {
+  const { scope } = await getCurrentAdmin();
+  const id = ids.safeParse(Object.fromEntries(formData));
+  const parsed = sponsorLogoSchema.safeParse(Object.fromEntries(formData));
+  if (!id.success || !parsed.success) return fail(prev, parsed.error?.issues[0]?.message ?? "Check the logo link");
+  if (!(await updateSponsorLogo(scope, parsed.data.sponsorId, parsed.data.logoUrl))) return fail(prev, "Unknown sponsor");
+  invalidate(scope, id.data.competitionId);
+  return done(prev, parsed.data.logoUrl ? "Logo saved." : "Logo removed: the name is shown instead.");
 }

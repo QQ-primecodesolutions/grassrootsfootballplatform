@@ -5,18 +5,31 @@ import { Suspense } from "react";
 import {
   AddExistingTeamsForm,
   AddNewTeamsForm,
+  AddSponsorForm,
   AdjustmentForm,
   CompetitionForm,
   RulesForm,
+  SponsorLogoForm,
 } from "@/components/admin/CompetitionForms";
 import { PageSkeleton } from "@/components/public/PageSkeleton";
 import { getCurrentAdmin } from "@/lib/auth";
 import { COMPETITION_TYPE_LABELS } from "@/lib/competitions/input";
 import { listTeamsForAdmin } from "@/lib/db/queries/admin";
-import { getCompetitionForSetup } from "@/lib/db/queries/setup";
+import {
+  getCompetitionForSetup,
+  listCompetitionSponsors,
+  listOrgSponsors,
+  MAX_COMPETITION_SPONSORS,
+} from "@/lib/db/queries/setup";
 import { describeRules } from "@/lib/rules";
 import { todaySast } from "@/lib/time";
-import { deleteCompetitionAction, removeAdjustmentAction, removeEntryAction } from "../actions";
+import {
+  deleteCompetitionAction,
+  moveSponsorAction,
+  removeAdjustmentAction,
+  removeEntryAction,
+  removeSponsorAction,
+} from "../actions";
 
 export const metadata: Metadata = { title: "Competition" };
 
@@ -36,12 +49,19 @@ async function CompetitionSetup({
   searchParams,
 }: Pick<PageProps<"/admin/competitions/[competitionId]">, "params" | "searchParams">) {
   const [{ competitionId }, query, { scope, org }] = await Promise.all([params, searchParams, getCurrentAdmin()]);
-  const [data, allTeams] = await Promise.all([getCompetitionForSetup(scope, competitionId), listTeamsForAdmin(scope)]);
+  const [data, allTeams, orgSponsors] = await Promise.all([
+    getCompetitionForSetup(scope, competitionId),
+    listTeamsForAdmin(scope),
+    listOrgSponsors(scope),
+  ]);
   if (!data) notFound();
   const { competition: c, entries, adjustments } = data;
   const entered = new Set(entries.map((e) => e.teamId));
   const available = allTeams.filter((t) => !entered.has(t.id)).map((t) => ({ id: t.id, name: t.name, category: t.category }));
   const isLeague = c.type === "league";
+  const shown = await listCompetitionSponsors(scope, c.id);
+  const shownIds = new Set(shown.map((s) => s.sponsorId));
+  const availableSponsors = orgSponsors.filter((s) => !shownIds.has(s.id));
   const totalMatches = entries.reduce((n, e) => n + e.matchCount, 0) / 2;
 
   return (
@@ -188,6 +208,68 @@ async function CompetitionSetup({
           ) : null}
         </section>
       ) : null}
+
+      <section className={sectionClass} aria-labelledby="sponsors-heading">
+        <h2 id="sponsors-heading" className={h2Class}>
+          Sponsors ({shown.length}/{MAX_COMPETITION_SPONSORS})
+        </h2>
+        <p className="mt-1 text-sm text-gray-600">Shown along the bottom of this competition&apos;s graphics, in this order.</p>
+        {shown.length ? (
+          <ol className="mt-2 divide-y divide-black/5">
+            {shown.map((sp, i) => (
+              <li key={sp.sponsorId} className="py-2">
+                <div className="flex items-center gap-1">
+                  <span className="min-w-0 flex-1 truncate font-semibold">
+                    {i + 1}. {sp.name}
+                    {sp.logoUrl ? <span className="ml-2 text-xs font-normal text-gray-600">logo</span> : null}
+                  </span>
+                  {(
+                    [
+                      [-1, "↑", "Move left", i === 0],
+                      [1, "↓", "Move right", i === shown.length - 1],
+                    ] as const
+                  ).map(([direction, arrow, label, disabled]) => (
+                    <form key={direction} action={moveSponsorAction}>
+                      <input type="hidden" name="competitionId" value={c.id} />
+                      <input type="hidden" name="sponsorId" value={sp.sponsorId} />
+                      <input type="hidden" name="direction" value={direction} />
+                      <button
+                        type="submit"
+                        disabled={disabled}
+                        aria-label={`${label}: ${sp.name}`}
+                        className="h-10 w-10 rounded-lg bg-gray-100 font-semibold disabled:opacity-30"
+                      >
+                        {arrow}
+                      </button>
+                    </form>
+                  ))}
+                  <form action={removeSponsorAction}>
+                    <input type="hidden" name="competitionId" value={c.id} />
+                    <input type="hidden" name="sponsorId" value={sp.sponsorId} />
+                    <button type="submit" className="rounded px-2 py-2 text-sm font-semibold text-red-800">
+                      Remove
+                    </button>
+                  </form>
+                </div>
+                <details className="mt-1">
+                  <summary className="cursor-pointer text-sm text-gray-700">{sp.logoUrl ? "Change logo" : "Add a logo"}</summary>
+                  <SponsorLogoForm competitionId={c.id} sponsorId={sp.sponsorId} logoUrl={sp.logoUrl} />
+                </details>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="mt-2 text-sm text-gray-600">No sponsors: the graphics end at the hashtags.</p>
+        )}
+        {shown.length < MAX_COMPETITION_SPONSORS ? (
+          <details className="mt-3" open={shown.length === 0}>
+            <summary className="cursor-pointer font-semibold">Add a sponsor</summary>
+            <div className="mt-2">
+              <AddSponsorForm competitionId={c.id} available={availableSponsors.map((s) => ({ id: s.id, name: s.name }))} />
+            </div>
+          </details>
+        ) : null}
+      </section>
 
       <section className={sectionClass} aria-labelledby="settings-heading">
         <h2 id="settings-heading" className={`${h2Class} mb-3`}>

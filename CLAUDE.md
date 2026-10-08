@@ -137,6 +137,11 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
   `group_knockout` needs group tables first.
 - `friendly` competitions: no table and no forced winner (level is fine). Extra time and
   penalties are optional (`lib/match/result-input.ts`). Knockouts still require a winner.
+- Sponsors: `sponsors` belong to the organisation, and `competition_sponsors` (ordered, max 5)
+  puts them on a competition's graphics. The seed links sponsors only to a competition that has
+  none, so admin changes survive a re-seed.
+- Fixtures graphic: rows grow when there are 1–3 fixtures (`fixtureRowHeight`), and one name
+  size fits every name (`fixtureNameFont`, which wraps the same way as `<Words>`).
 - Fixture sharing: `/admin/share/fixtures/[competitionId]?date=`, built from
   `lib/admin/share-links.ts` and `lib/share/fixtures.ts` (pure captions). `GraphicShare` is the
   client panel; `share-hooks.ts` has the Web Share helpers shared with `SharePanel`.
