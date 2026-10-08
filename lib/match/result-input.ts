@@ -37,7 +37,7 @@ export const resultFormSchema = z.object({
 export type ResultFormInput = z.infer<typeof resultFormSchema>;
 
 export type ResultContext = {
-  competitionType: "league" | "knockout" | "group_knockout";
+  competitionType: "league" | "knockout" | "group_knockout" | "friendly";
   homeEntryId: string;
   awayEntryId: string;
 };
@@ -99,7 +99,9 @@ export function buildResultPatch(
 
   const resultState: ResultState = input.intent === "confirm" ? "confirmed" : "provisional";
   const errors: ResultErrors = {};
-  const knockout = ctx.competitionType !== "league";
+  // Knockouts need a winner. Friendlies may end level, or be settled by extra time or penalties.
+  const extrasAllowed = ctx.competitionType !== "league";
+  const winnerRequired = ctx.competitionType === "knockout" || ctx.competitionType === "group_knockout";
 
   if (input.outcome === "walkover") {
     if (!input.walkoverWinner) return { ok: false, errors: { walkover: "Choose which team gets the walkover" } };
@@ -126,7 +128,7 @@ export function buildResultPatch(
   if (ht && (ht[0] > ft[0] || ht[1] > ft[1])) errors.halfTime = "Half-time goals can't be more than full-time goals";
 
   if (aet) {
-    if (!knockout) errors.extraTime = "League matches don't have extra time";
+    if (!extrasAllowed) errors.extraTime = "League matches don't have extra time";
     else if (ft[0] !== ft[1]) errors.extraTime = "Extra time only follows a draw at full time";
     else if (aet[0] < ft[0] || aet[1] < ft[1]) errors.extraTime = "The score after extra time includes the full-time goals, so it can't be lower";
   }
@@ -134,10 +136,10 @@ export function buildResultPatch(
   const level = final[0] === final[1];
 
   if (pens) {
-    if (!knockout) errors.penalties = "League matches don't have penalty shootouts";
+    if (!extrasAllowed) errors.penalties = "League matches don't have penalty shootouts";
     else if (!level) errors.penalties = "Penalties only follow a draw";
     else if (pens[0] === pens[1]) errors.penalties = "A shootout can't end level";
-  } else if (knockout && level) {
+  } else if (winnerRequired && level) {
     errors.penalties = "A knockout match needs a winner: enter the penalty shootout";
   }
   if (Object.keys(errors).length) return { ok: false, errors };

@@ -11,7 +11,14 @@ import { competitionRulesSchema, TIE_BREAKERS, type CompetitionRules } from "@/l
 export const RESERVED_COMPETITION_SLUGS = new Set(["match", "team", "admin", "graphics"]);
 
 /** Types the admin can create. `group_knockout` needs group tables, which aren't built yet. */
-export const CREATABLE_TYPES = ["league", "knockout"] as const;
+export const CREATABLE_TYPES = ["league", "knockout", "friendly"] as const;
+
+export const COMPETITION_TYPE_LABELS = {
+  league: "League",
+  knockout: "Knockout",
+  group_knockout: "Groups + knockout",
+  friendly: "Friendlies",
+} as const;
 
 const optionalText = (max: number) =>
   z
@@ -67,7 +74,7 @@ const settingsFields = {
 
 export const competitionCreateSchema = z.object({
   ...settingsFields,
-  type: z.enum(CREATABLE_TYPES, { error: "Choose league or knockout" }),
+  type: z.enum(CREATABLE_TYPES, { error: "Choose league, knockout or friendlies" }),
   season: z.string().trim().min(2, "Enter the season, e.g. 2026").max(30),
   slug: z
     .string()

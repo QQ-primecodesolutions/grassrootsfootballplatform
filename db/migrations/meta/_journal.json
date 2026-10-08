@@ -29,6 +29,13 @@
       "when": 1791489506906,
       "tag": "0003_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791497482293,
+      "tag": "0004_competition_type_friendly",
+      "breakpoints": true
     }
   ]
 }

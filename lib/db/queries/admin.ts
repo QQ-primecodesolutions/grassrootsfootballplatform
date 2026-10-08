@@ -50,7 +50,7 @@ export type AdminCompetition = {
   id: string;
   slug: string;
   name: string;
-  type: "league" | "knockout" | "group_knockout";
+  type: "league" | "knockout" | "group_knockout" | "friendly";
   streamLabel: string | null;
   area: string | null;
   seasonName: string;
@@ -139,7 +139,7 @@ export type AdminMatch = {
   competitionId: string;
   competitionSlug: string;
   competitionName: string;
-  competitionType: "league" | "knockout" | "group_knockout";
+  competitionType: "league" | "knockout" | "group_knockout" | "friendly";
   streamLabel: string | null;
   roundLabel: string | null;
   kickoffAt: Date | null;

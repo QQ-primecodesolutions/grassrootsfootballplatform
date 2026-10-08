@@ -9,7 +9,7 @@ type Outcome = "normal" | "walkover" | "awarded";
 
 export type ResultFormMatch = {
   id: string;
-  competitionType: "league" | "knockout" | "group_knockout";
+  competitionType: "league" | "knockout" | "group_knockout" | "friendly";
   homeName: string;
   awayName: string;
   status: Status;
@@ -76,7 +76,9 @@ const initialState: SaveResultState = { ok: false, message: null, errors: {} };
 
 export function ResultForm({ match }: { match: ResultFormMatch }) {
   const [state, formAction, pending] = useActionState(saveResult, initialState);
-  const knockout = match.competitionType !== "league";
+  const extrasAllowed = match.competitionType !== "league";
+  // Friendlies may end level: a shootout is optional there, but required in knockouts.
+  const friendly = match.competitionType === "friendly";
 
   const [status, setStatus] = useState<Status>(match.status === "scheduled" ? "completed" : match.status);
   const [outcome, setOutcome] = useState<Outcome>(match.outcomeType);
@@ -90,6 +92,7 @@ export function ResultForm({ match }: { match: ResultFormMatch }) {
   const [aetAway, setAetAway] = useState(match.aetAwayGoals ?? match.awayGoals ?? 0);
   const [penHome, setPenHome] = useState(match.penHome ?? 0);
   const [penAway, setPenAway] = useState(match.penAway ?? 0);
+  const [showPens, setShowPens] = useState(match.penHome !== null);
   const [walkoverWinner, setWalkoverWinner] = useState<"home" | "away" | null>(match.walkoverWinner);
   const [confirming, setConfirming] = useState(false);
 
@@ -102,11 +105,12 @@ export function ResultForm({ match }: { match: ResultFormMatch }) {
 
   const played = status === "completed";
   const scored = played && outcome !== "walkover";
-  // Extra time and penalties only exist in knockouts, and only after a draw.
-  const etAvailable = scored && knockout && home === away;
+  // Extra time and penalties only exist outside leagues, and only after a draw.
+  const etAvailable = scored && extrasAllowed && home === away;
   const finalHome = etAvailable && showEt ? aetHome : home;
   const finalAway = etAvailable && showEt ? aetAway : away;
-  const pensNeeded = etAvailable && finalHome === finalAway;
+  const pensPossible = etAvailable && finalHome === finalAway;
+  const pensNeeded = pensPossible && (!friendly || showPens);
 
   const scoreText =
     outcome === "walkover"
@@ -207,6 +211,16 @@ export function ResultForm({ match }: { match: ResultFormMatch }) {
                 </>
               ) : null}
               {fieldError(errors.extraTime)}
+            </div>
+          ) : null}
+
+          {pensPossible && friendly ? (
+            <div className="mt-3 border-t border-black/5 pt-3">
+              <label className="flex min-h-11 items-center gap-2 text-sm font-semibold">
+                <input type="checkbox" checked={showPens} onChange={(e) => setShowPens(e.target.checked)} className="h-5 w-5" />
+                A penalty shootout was taken
+              </label>
+              <p className="text-xs text-gray-600">Leave unticked if the friendly ended as a draw.</p>
             </div>
           ) : null}
 

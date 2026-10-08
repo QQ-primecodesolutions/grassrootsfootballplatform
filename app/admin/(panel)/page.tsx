@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AdminList, AdminMatchRow } from "@/components/admin/AdminMatchRow";
 import { PageSkeleton } from "@/components/public/PageSkeleton";
-import { groupAdminMatches } from "@/lib/admin/match-lists";
+import { groupAdminMatches, upcomingMatchDays } from "@/lib/admin/match-lists";
 import { getCurrentAdmin } from "@/lib/auth";
 import { listAdminMatches, listCompetitionsForAdmin } from "@/lib/db/queries/admin";
-import { todaySast } from "@/lib/time";
+import { formatLongDate, sastDateTime, todaySast } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Home" };
 
@@ -21,7 +21,9 @@ export default function AdminHomePage() {
 async function AdminHome() {
   const { scope, org } = await getCurrentAdmin();
   const [competitions, matches] = await Promise.all([listCompetitionsForAdmin(scope), listAdminMatches(scope)]);
-  const groups = groupAdminMatches(matches, todaySast());
+  const today = todaySast();
+  const groups = groupAdminMatches(matches, today);
+  const matchDays = upcomingMatchDays(matches, today, 4);
 
   return (
     <>
@@ -75,6 +77,33 @@ async function AdminHome() {
           </p>
         ) : null,
       )}
+
+      {matchDays.length ? (
+        <>
+          <h2 className="mt-6 mb-2 font-display text-lg font-bold uppercase">Coming up: share fixtures</h2>
+          <ul className="space-y-2">
+            {matchDays.map((d) => (
+              <li key={`${d.date}-${d.competitionId}`}>
+                <Link
+                  href={`/admin/share/fixtures/${d.competitionId}?date=${d.date}`}
+                  className="flex items-center gap-3 rounded-lg bg-sky-50 px-3 py-3 ring-1 ring-sky-200"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold">
+                      {d.date === today ? "Today" : formatLongDate(sastDateTime(d.date, "12:00"))}
+                    </span>
+                    <span className="block truncate text-sm text-gray-700">
+                      {[d.competitionName, d.streamLabel].filter(Boolean).join(" · ")} · {d.matches.length} fixture
+                      {d.matches.length === 1 ? "" : "s"}
+                    </span>
+                  </span>
+                  <span className="text-sm font-semibold text-sky-950">Share →</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
 
       <h2 className="mt-6 mb-2 font-display text-lg font-bold uppercase">Today</h2>
       {groups.today.length ? (

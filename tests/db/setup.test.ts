@@ -166,3 +166,15 @@ describe("rules and adjustments", () => {
     expect(streamA!.rules.confirmed).toBe(true);
   });
 });
+
+describe("friendlies", () => {
+  it("creates a friendlies competition and keeps level results without a winner", async () => {
+    const created = await createCompetition(bp, form({ name: "Friendlies", type: "friendly", slug: "friendlies-2026" }), db);
+    expect(created.ok).toBe(true);
+    const id = (created as { id: string }).id;
+    expect(await createTeamsAndEnter(bp, id, ["Passion FC", "Mabolela United"], "Open", db)).toEqual({ created: 0, reused: 2 });
+    const data = (await getCompetitionForSetup(bp, id, db))!;
+    expect(data.competition).toMatchObject({ type: "friendly", expectedMatchCount: null });
+    expect(data.entries).toHaveLength(2);
+  });
+});

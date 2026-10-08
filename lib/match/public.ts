@@ -36,7 +36,7 @@ export type PublicMatch = {
     name: string;
     streamLabel: string | null;
     area: string | null;
-    type: "league" | "knockout" | "group_knockout";
+    type: "league" | "knockout" | "group_knockout" | "friendly";
   };
   roundLabel: string | null;
   roundNumber: number | null;

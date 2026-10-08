@@ -135,6 +135,11 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
   social links on re-run, so admin edits survive. `rules.confirmed` (default false) drives the
   "rules not yet confirmed" reminders. Admins can create `league` and `knockout` only;
   `group_knockout` needs group tables first.
+- `friendly` competitions: no table and no forced winner (level is fine). Extra time and
+  penalties are optional (`lib/match/result-input.ts`). Knockouts still require a winner.
+- Fixture sharing: `/admin/share/fixtures/[competitionId]?date=`, built from
+  `lib/admin/share-links.ts` and `lib/share/fixtures.ts` (pure captions). `GraphicShare` is the
+  client panel; `share-hooks.ts` has the Web Share helpers shared with `SharePanel`.
 - Drizzle renders columns unqualified in a single-table select, so a correlated `sql` count
   subquery must name its tables explicitly (see `lib/db/queries/setup.ts`).
 - Result rules live in `lib/match/result-input.ts` and captions in `lib/share/`. Both are pure and tested.

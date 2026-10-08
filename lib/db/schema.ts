@@ -30,7 +30,7 @@ import type { CompetitionRules } from "@/lib/rules";
 // Enums
 // ---------------------------------------------------------------------------
 
-export const competitionType = pgEnum("competition_type", ["league", "knockout", "group_knockout"]);
+export const competitionType = pgEnum("competition_type", ["league", "knockout", "group_knockout", "friendly"]);
 export const matchStatus = pgEnum("match_status", [
   "scheduled",
   "postponed",

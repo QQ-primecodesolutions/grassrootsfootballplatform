@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { GraphicShare } from "@/components/admin/GraphicShare";
 import { ResultForm, type ResultFormMatch } from "@/components/admin/ResultForm";
 import { SharePanel } from "@/components/admin/SharePanel";
 import { PageSkeleton } from "@/components/public/PageSkeleton";
 import { StatusBadge } from "@/components/public/StatusBadge";
+import { matchPreviewShare } from "@/lib/admin/share-links";
 import { getCurrentAdmin } from "@/lib/auth";
 import { getAdminMatch } from "@/lib/db/queries/admin";
 import { siteUrl } from "@/lib/env";
@@ -33,6 +35,8 @@ async function ResultEntry({ params }: Pick<PageProps<"/admin/results/[matchId]"
 
   const share = shareForMatch(m, org, siteUrl());
   const graphics = share ? await graphicLinks(org.slug, m) : [];
+  // Before kickoff: a "Team A vs Team B" card to announce the match.
+  const preview = !share && m.status === "scheduled" ? await matchPreviewShare(org, m, siteUrl()) : null;
   const formMatch: ResultFormMatch = {
     id: m.id,
     competitionType: m.competitionType,
@@ -74,6 +78,15 @@ async function ResultEntry({ params }: Pick<PageProps<"/admin/results/[matchId]"
       {share ? <SharePanel share={share} graphics={graphics} /> : null}
 
       <ResultForm match={formMatch} />
+
+      {preview ? (
+        <details className="rounded-lg bg-white p-3 shadow-sm ring-1 ring-black/5">
+          <summary className="cursor-pointer font-semibold">Announce this match (graphic + WhatsApp)</summary>
+          <div className="mt-3">
+            <GraphicShare title="Share this match" graphics={preview.graphics} text={preview.text} fileName="match.png" />
+          </div>
+        </details>
+      ) : null}
     </div>
   );
 }

@@ -145,7 +145,7 @@ export async function upsertCompetition(
     seasonId: string;
     name: string;
     slug: string;
-    type: "league" | "knockout" | "group_knockout";
+    type: "league" | "knockout" | "group_knockout" | "friendly";
     streamLabel?: string | null;
     area?: string | null;
     slogan?: string | null;

@@ -1,38 +1,12 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import type { MatchShare } from "@/lib/share/for-match";
+import { copyText as copy, shareImage as shareImageFile, useCanNativeShare, useCanShareFiles } from "./share-hooks";
 
-const noSubscribe = () => () => {};
-/** True only in browsers with the Web Share API (false during server render: no hydration mismatch). */
-function useCanNativeShare() {
-  return useSyncExternalStore(noSubscribe, () => "share" in navigator, () => false);
-}
-/** True where the Web Share API can share image files (e.g. Android Chrome → WhatsApp). */
-function useCanShareFiles() {
-  return useSyncExternalStore(
-    noSubscribe,
-    () => {
-      try {
-        return navigator.canShare?.({ files: [new File([""], "graphic.png", { type: "image/png" })] }) ?? false;
-      } catch {
-        return false;
-      }
-    },
-    () => false,
-  );
-}
+import type { GraphicLink } from "@/lib/graphics/urls";
 
-async function copy(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export type GraphicLink = { label: string; href: string; downloadHref: string };
+export type { GraphicLink };
 
 /** Shown after a result is confirmed: graphics, link, WhatsApp, Facebook caption. */
 export function SharePanel({ share, graphics = [] }: { share: MatchShare; graphics?: GraphicLink[] }) {
@@ -51,16 +25,10 @@ export function SharePanel({ share, graphics = [] }: { share: MatchShare; graphi
     if (!mainGraphic) return;
     setSharing(true);
     setMessage(null);
-    try {
-      const res = await fetch(mainGraphic.href);
-      if (!res.ok) throw new Error(String(res.status));
-      const file = new File([await res.blob()], "result.png", { type: "image/png" });
-      await navigator.share({ files: [file], text: share.whatsappText });
-    } catch (e) {
-      if (!(e instanceof DOMException && e.name === "AbortError")) setMessage("Couldn't share the image. Download it instead.");
-    } finally {
-      setSharing(false);
+    if ((await shareImageFile(mainGraphic.href, "result.png", share.whatsappText)) === "failed") {
+      setMessage("Couldn't share the image. Download it instead.");
     }
+    setSharing(false);
   };
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createFixture, type FixtureFormState } from "@/app/admin/(panel)/fixtures/actions";
 import { Field, FormMessage, VenuePicker, inputClass, type CompetitionOption, type VenueOption } from "./fields";
@@ -93,6 +94,14 @@ export function FixtureForm({ competitions, venues, today }: { competitions: Com
       </Field>
 
       <FormMessage ok={state.ok} message={state.message} />
+      {state.ok && state.shareHref ? (
+        <Link
+          href={state.shareHref}
+          className="flex h-12 items-center justify-center rounded-lg bg-sky-50 font-semibold text-sky-950 ring-1 ring-sky-200"
+        >
+          Share these fixtures (graphic + WhatsApp) →
+        </Link>
+      ) : null}
 
       <button type="submit" disabled={pending} className="h-14 w-full rounded-lg bg-gray-900 text-base font-semibold text-white disabled:opacity-60">
         {pending ? "Saving…" : "Save fixture"}

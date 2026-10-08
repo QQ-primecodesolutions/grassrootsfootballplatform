@@ -42,3 +42,34 @@ export function groupAdminMatches(
       .reverse(),
   };
 }
+
+export type MatchDay = {
+  competitionId: string;
+  competitionName: string;
+  streamLabel: string | null;
+  /** SAST date key */
+  date: string;
+  matches: AdminMatch[];
+};
+
+/**
+ * Pure: scheduled fixtures from `today` (SAST date key) onwards, grouped by competition and
+ * day, soonest first. These are the match days with a fixtures graphic to share.
+ */
+export function upcomingMatchDays(matches: AdminMatch[], today: string, limit = 6): MatchDay[] {
+  const days = new Map<string, MatchDay>();
+  const sorted = matches
+    .filter((m) => m.status === "scheduled" && m.kickoffAt && sastDateKey(m.kickoffAt) >= today)
+    .sort((a, b) => a.kickoffAt!.getTime() - b.kickoffAt!.getTime());
+  for (const m of sorted) {
+    const date = sastDateKey(m.kickoffAt!);
+    const key = `${date}|${m.competitionId}`;
+    let day = days.get(key);
+    if (!day) {
+      day = { competitionId: m.competitionId, competitionName: m.competitionName, streamLabel: m.streamLabel, date, matches: [] };
+      days.set(key, day);
+    }
+    day.matches.push(m);
+  }
+  return [...days.values()].sort((a, b) => a.date.localeCompare(b.date)).slice(0, limit);
+}

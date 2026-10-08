@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { PageSkeleton } from "@/components/public/PageSkeleton";
 import { getCurrentAdmin } from "@/lib/auth";
+import { COMPETITION_TYPE_LABELS } from "@/lib/competitions/input";
 import { listCompetitionsForSetup } from "@/lib/db/queries/setup";
 
 export const metadata: Metadata = { title: "Competitions" };
@@ -53,7 +54,7 @@ async function Competitions({ searchParams }: Pick<PageProps<"/admin/competition
                   ) : null}
                 </span>
                 <span className="block text-sm text-gray-600">
-                  {c.type === "league" ? "League" : "Knockout"} · {c.seasonName} · {c.entryCount} team{c.entryCount === 1 ? "" : "s"} ·{" "}
+                  {COMPETITION_TYPE_LABELS[c.type]} · {c.seasonName} · {c.entryCount} team{c.entryCount === 1 ? "" : "s"} ·{" "}
                   {c.matchCount} match{c.matchCount === 1 ? "" : "es"}
                   {c.type === "league" && !c.rulesConfirmed ? (
                     <span className="font-semibold text-amber-800"> · rules not confirmed</span>

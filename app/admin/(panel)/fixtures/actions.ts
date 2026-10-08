@@ -8,7 +8,15 @@ import { ensureVenue, insertFixtures, listCompetitionsForAdmin, type NewFixture 
 import type { OrgScope } from "@/lib/db/queries";
 import { sastDateTime } from "@/lib/time";
 
-export type FixtureFormState = { ok: boolean; message: string | null; nonce: number };
+export type FixtureFormState = {
+  ok: boolean;
+  message: string | null;
+  nonce: number;
+  /** After saving: the page to share that day's fixtures graphic. */
+  shareHref?: string;
+};
+
+const shareHrefFor = (competitionId: string, date: string) => `/admin/share/fixtures/${competitionId}?date=${date}`;
 
 const optionalText = (max: number) =>
   z
@@ -92,7 +100,12 @@ export async function createFixture(prev: FixtureFormState, formData: FormData):
     return { ok: false, message: `${home.name} v ${away.name} is already on that date.`, nonce };
   }
   invalidate(scope, competition.id, [home.teamId, away.teamId]);
-  return { ok: true, message: `Added ${home.name} v ${away.name}. Add another?`, nonce };
+  return {
+    ok: true,
+    message: `Added ${home.name} v ${away.name}. Add another?`,
+    nonce,
+    shareHref: shareHrefFor(competition.id, f.date),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -160,5 +173,10 @@ export async function savePastedFixtures(prev: FixtureFormState, formData: FormD
   const parts = [`Saved ${result.inserted.length} fixture${result.inserted.length === 1 ? "" : "s"}`];
   if (result.skipped) parts.push(`${result.skipped} already existed and ${result.skipped === 1 ? "was" : "were"} skipped`);
   if (p.aliases.length) parts.push(`learned ${p.aliases.length} new name${p.aliases.length === 1 ? "" : "s"}`);
-  return { ok: true, message: `${parts.join(", ")}.`, nonce };
+  return {
+    ok: true,
+    message: `${parts.join(", ")}.`,
+    nonce,
+    shareHref: result.inserted.length ? shareHrefFor(competition.id, p.date) : undefined,
+  };
 }

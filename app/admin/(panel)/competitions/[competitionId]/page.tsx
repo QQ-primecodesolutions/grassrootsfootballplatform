@@ -11,6 +11,7 @@ import {
 } from "@/components/admin/CompetitionForms";
 import { PageSkeleton } from "@/components/public/PageSkeleton";
 import { getCurrentAdmin } from "@/lib/auth";
+import { COMPETITION_TYPE_LABELS } from "@/lib/competitions/input";
 import { listTeamsForAdmin } from "@/lib/db/queries/admin";
 import { getCompetitionForSetup } from "@/lib/db/queries/setup";
 import { describeRules } from "@/lib/rules";
@@ -59,7 +60,7 @@ async function CompetitionSetup({
           {c.streamLabel ? ` · ${c.streamLabel}` : ""}
         </h1>
         <p className="text-sm text-gray-600">
-          {isLeague ? "League" : "Knockout"} · {c.seasonName} ·{" "}
+          {COMPETITION_TYPE_LABELS[c.type]} · {c.seasonName} ·{" "}
           <Link href={`/${org.slug}/${c.slug}`} className="underline">
             public page
           </Link>

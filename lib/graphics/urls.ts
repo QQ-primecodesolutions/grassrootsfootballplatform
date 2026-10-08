@@ -10,6 +10,9 @@ export function graphicVersion(...parts: unknown[]): string {
   return createHash("sha1").update(JSON.stringify(parts)).digest("hex").slice(0, 12);
 }
 
+/** A graphic for the admin share panels: view URL and download URL. */
+export type GraphicLink = { label: string; href: string; downloadHref: string };
+
 export type GraphicTarget =
   | { kind: "matchday" | "table" | "fixtures"; org: string; competition: string }
   | { kind: "result" | "match"; org: string; matchId: string };

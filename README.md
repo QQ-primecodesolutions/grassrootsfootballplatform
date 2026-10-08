@@ -253,8 +253,8 @@ Security:
 
 Under **Setup** (bottom bar). A new organisation's admin home shows the same three steps.
 
-1. **+ New competition**: choose **League** (a table) or **Knockout / cup** (rounds, a winner each
-   match), then the name and season.
+1. **+ New competition**: choose **League** (a table), **Knockout / cup** (rounds, a winner each
+   match) or **Friendlies** (no table), then the name and season.
    - The link name (public URL) is suggested from the name and season and can't change later.
    - **Feature on the public home page**: the featured league leads the organisation's page.
      Only one competition is featured at a time.
@@ -275,6 +275,11 @@ Under **Setup** (bottom bar). A new organisation's admin home shows the same thr
    reason and the date they apply from.
 6. **Delete this competition** (bottom of the page): only before it has any matches.
 
+**Friendlies** (and matches in other organisers' tournaments): create one competition per season,
+e.g. "Friendlies", with the **Friendlies** format. There's no table, and a level score is fine.
+Extra time or a penalty shootout can be recorded if one was played. Opponents from outside the
+league are just teams: paste their names. Their matches never affect a league table.
+
 Group stages (groups, then knockouts) aren't supported yet.
 
 Re-running `pnpm db:seed` refreshes only logos and Facebook links. Names, settings and rules
@@ -289,6 +294,13 @@ edited in admin are kept.
 - **Paste**: paste fixtures from WhatsApp, fix any names shown in red, and save. Corrected names
   can be remembered as aliases. Fixtures that already exist are skipped.
 - **Fixture**: add one fixture. Competition, date, time and venue stay filled in for the next one.
+- **Sharing fixtures** (before the matches):
+  - After saving fixtures, tap *Share these fixtures*. The admin home also lists the coming match
+    days under *Coming up: share fixtures*.
+  - The page offers the fixtures graphic (portrait for WhatsApp status, square for Facebook),
+    *Share image…* on Android, and a ready-made WhatsApp message.
+  - Tap a match there (or open it from **Results**) and use *Announce this match* for a
+    single-match "A vs B" graphic.
 - **Setup**: competitions, their teams, rules and points adjustments (above). **All teams** lists
   every team with its aliases (other spellings).
 - Venues are created from the fixture forms. Organisation branding is edited by the platform admin.

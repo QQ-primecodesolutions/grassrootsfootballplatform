@@ -96,6 +96,13 @@ the rest of the document, this section wins.
   - The seed re-run now refreshes only logos and social links, so admin edits survive.
   - Group stages are deferred.
 
+- Milestone 9, 2026-10-09, approved by the owner:
+  - Fixture graphics in admin: the share page per match day, links after saving fixtures, and an
+    "Announce this match" card. The graphics already existed; only the admin entry points were
+    missing.
+  - New competition format `friendly` (enum value, migration 0004): no table, and draws are
+    allowed. It also covers matches in other organisers' tournaments.
+
 **Changes**
 - A. CHECK: `outcome_type = 'walkover'` ⇒ `status = 'completed'`.
 - B. Graphics route handlers send `Cache-Control: public, s-maxage=…, stale-while-revalidate=…`

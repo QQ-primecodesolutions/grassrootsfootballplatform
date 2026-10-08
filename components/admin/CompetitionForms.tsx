@@ -10,6 +10,7 @@ import {
   updateRulesAction,
   type SetupFormState,
 } from "@/app/admin/(panel)/competitions/actions";
+import { COMPETITION_TYPE_LABELS } from "@/lib/competitions/input";
 import { slugify } from "@/lib/fixtures-paste/normalize";
 import { TIE_BREAKER_LABELS, TIE_BREAKERS, type CompetitionRules } from "@/lib/rules";
 import { Field, FormMessage, inputClass } from "./fields";
@@ -21,7 +22,7 @@ export type CompetitionSettings = {
   id: string;
   slug: string;
   name: string;
-  type: "league" | "knockout" | "group_knockout";
+  type: "league" | "knockout" | "group_knockout" | "friendly";
   seasonName: string;
   streamLabel: string | null;
   area: string | null;
@@ -56,17 +57,18 @@ export function CompetitionForm({
       {competition ? <input type="hidden" name="competitionId" value={competition.id} /> : null}
       {editing ? (
         <p className="text-sm text-gray-600">
-          {competition!.type === "league" ? "League" : "Knockout"} · season {competition!.seasonName} · link{" "}
+          {COMPETITION_TYPE_LABELS[competition!.type]} · season {competition!.seasonName} · link{" "}
           <strong>/{competition!.slug}</strong> (fixed, so shared links keep working)
         </p>
       ) : (
         <fieldset>
           <legend className="text-sm font-semibold">Format</legend>
-          <div className="mt-1 grid grid-cols-2 gap-2">
+          <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
             {(
               [
                 ["league", "League", "Everyone plays everyone; a table"],
                 ["knockout", "Knockout / cup", "Rounds, a winner each match"],
+                ["friendly", "Friendlies", "One-off matches; no table, draws allowed"],
               ] as const
             ).map(([value, label, hint]) => (
               <label
@@ -88,7 +90,7 @@ export function CompetitionForm({
           </div>
         </fieldset>
       )}
-      <Field label="Name" hint='e.g. "QwaQwa Development League Open" or "Top 4 Cup"'>
+      <Field label="Name" hint='e.g. "QwaQwa Development League Open", "Top 4 Cup" or "Friendlies"'>
         <input name="name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} className={inputClass} />
       </Field>
       {editing ? null : (

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import { savePastedFixtures, type FixtureFormState } from "@/app/admin/(panel)/fixtures/actions";
 import { matchTeamName, type NameMatch } from "@/lib/fixtures-paste/match";
@@ -238,6 +239,14 @@ export function PasteFixtures({ competitions, venues, today }: { competitions: C
       ) : null}
 
       <FormMessage ok={state.ok} message={state.message} />
+      {state.ok && state.shareHref ? (
+        <Link
+          href={state.shareHref}
+          className="flex h-12 items-center justify-center rounded-lg bg-sky-50 font-semibold text-sky-950 ring-1 ring-sky-200"
+        >
+          Share these fixtures (graphic + WhatsApp) →
+        </Link>
+      ) : null}
 
       <button
         type="submit"
