@@ -76,6 +76,17 @@ the rest of the document, this section wins.
   `competitions.social_links` column; there are no other social accounts. The public site links
   both, and graphics show a Facebook icon.
 
+- Milestone 7 (accounts and organisations), 2026-10-08, approved by the owner because other
+  organisations have asked to join. The shared `ADMIN_PASSWORD` is replaced by personal logins.
+  - Roles: super admin (the owner; all organisations, creates organisations, adds and removes
+    their admins) and org admin (only their memberships). A scorer role can come later.
+  - Invites and password resets are one-time links (7 days / 24 hours) that the super admin sends
+    on WhatsApp. There's no email service. The first super admin is made with `pnpm admin:super`.
+  - Login lockout as agreed on 2026-10-03: 5 failures per IP in 15 minutes, a global cap of 100,
+    counted in Postgres (`login_failures`).
+  - New organisations start unlisted (reachable by link, not shown on "/").
+  - Competition, season and team setup screens are Milestone 8.
+
 **Changes**
 - A. CHECK: `outcome_type = 'walkover'` ⇒ `status = 'completed'`.
 - B. Graphics route handlers send `Cache-Control: public, s-maxage=…, stale-while-revalidate=…`
@@ -526,16 +537,16 @@ installed version.
 The same values feed the graphics. Colour contrast is checked at seed time, and if the primary
 colour fails on white, the design falls back to dark text.
 
-### 5.5 Admin auth (prototype)
+### 5.5 Admin auth (accounts since Milestone 7)
 
-- Login Server Action. It compares SHA-256(input) with SHA-256(`ADMIN_PASSWORD`) using
-  `crypto.timingSafeEqual`, so both sides are the same length. A small fixed delay is added on failure.
+- Login Server Action: email + password, checked against a scrypt hash (Node's `crypto`, no new
+  dependency), after the lockout check (`lib/auth/lockout.ts`). Unknown emails do the same work.
 - On success it sets the `admin_session` cookie to a JWT (HS256, `AUTH_SECRET`) holding
-  `{ sub: "admin", orgId }`. The cookie is `httpOnly; secure (prod); sameSite=lax; path=/admin`,
+  `{ sub: userId, orgId, sv }`, where `sv` must equal `users.session_version`. The cookie is `httpOnly; secure (prod); sameSite=lax; path=/admin`,
   with a 14-day expiry (Q13), because organisers at the pitch shouldn't be re-logging in.
 - `proxy.ts` redirects to login when the cookie is missing or invalid. `getCurrentAdmin()`
   re-verifies inside layouts and **every Server Action**. The proxy alone isn't trusted.
-- Switching org re-signs the cookie with the new `orgId`, after checking the org exists.
+- Switching org re-signs the cookie with the new `orgId`, after checking the user may access it.
 
 ### 5.6 Result entry flow (target: under 30 s)
 
@@ -642,7 +653,7 @@ All of this lives in `lib/time.ts`, with tests.
 13. **Session length.** 14 days, for convenience at the pitch. Shorter?
 14. **Brand colours.** There are no separate logo files, so I'll sample the green from
     the reference graphic itself in M1 and compare it with `#0B3D1F`/`#1E6B34`.
-15. **Login rate limiting** isn't in the brief. I'll add a simple failed-attempt delay only. Real
+15. **Login rate limiting** isn't in the brief. (Resolved in Milestone 7: per-IP lockout.) I'll add a simple failed-attempt delay only. Real
     rate limiting will come with real auth.
 
 ---

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { passwordMatches } from "@/lib/auth/password";
+import { SignJWT } from "jose";
 import { signSession, verifySession } from "@/lib/auth/session";
 import { matchTeamName, type Candidate } from "@/lib/fixtures-paste/match";
 import { parseFixtureText } from "@/lib/fixtures-paste/parse";
@@ -195,20 +195,31 @@ describe("team name matching (competition-scoped)", () => {
 
 describe("admin session", () => {
   const secret = "x".repeat(40);
+  const user = "0b6f2a5e-1c1d-4c3e-9a77-2f7d1b9c0a11";
+  const org = "5d1e8a2b-7f3c-4b6d-8e9f-0a1b2c3d4e5f";
 
   it("signs and verifies, and rejects tampering, wrong secrets and expiry", async () => {
-    const token = await signSession({ sub: "admin", orgId: "org-1" }, secret);
-    expect(await verifySession(token, secret)).toEqual({ sub: "admin", orgId: "org-1" });
+    const token = await signSession({ sub: user, orgId: org, sv: 3 }, secret);
+    expect(await verifySession(token, secret)).toEqual({ sub: user, orgId: org, sv: 3 });
     expect(await verifySession(token, "y".repeat(40))).toBeNull();
     expect(await verifySession(token.slice(0, -2) + "xx", secret)).toBeNull();
     expect(await verifySession(undefined, secret)).toBeNull();
-    const old = await signSession({ sub: "admin", orgId: "org-1" }, secret, new Date("2020-01-01"));
+    const old = await signSession({ sub: user, orgId: org, sv: 1 }, secret, new Date("2020-01-01"));
     expect(await verifySession(old, secret)).toBeNull();
   });
 
-  it("compares passwords exactly", () => {
-    expect(passwordMatches("correct horse", "correct horse")).toBe(true);
-    expect(passwordMatches("correct hors", "correct horse")).toBe(false);
-    expect(passwordMatches("", "correct horse")).toBe(false);
+  it("allows a session without an organisation (new super admin)", async () => {
+    const token = await signSession({ sub: user, orgId: null, sv: 1 }, secret);
+    expect(await verifySession(token, secret)).toEqual({ sub: user, orgId: null, sv: 1 });
+  });
+
+  it("rejects old shared-password sessions", async () => {
+    const legacy = await new SignJWT({ orgId: org })
+      .setProtectedHeader({ alg: "HS256" })
+      .setSubject("admin")
+      .setIssuedAt()
+      .setExpirationTime("1h")
+      .sign(new TextEncoder().encode(secret));
+    expect(await verifySession(legacy, secret)).toBeNull();
   });
 });

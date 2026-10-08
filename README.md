@@ -10,7 +10,7 @@ League tables are always calculated from confirmed match results. They are never
 
 Contents: [Local setup](#local-setup) · [Environment variables](#environment-variables) ·
 [Database workflow](#database-workflow) · [Deploy to Vercel + Neon](#deploy-to-vercel--neon) ·
-[Admin](#admin-prototype) · [Graphics](#graphics) · [Checks](#checks) · [Troubleshooting](#troubleshooting)
+[Admin](#admin) · [Graphics](#graphics) · [Checks](#checks) · [Troubleshooting](#troubleshooting)
 
 ## Local setup
 
@@ -28,11 +28,12 @@ pnpm install
 cp .env.example .env.local      # then set DATABASE_URL (Option A or B below)
 pnpm db:migrate                 # create the tables
 pnpm db:seed                    # Batho Pele + the fictional Demo organisation
+pnpm admin:super --email you@example.com --name "Your Name"   # prints a link to set your password
 pnpm dev                        # http://localhost:3000
 ```
 
-Open http://localhost:3000. For admin, go to http://localhost:3000/admin. The password is
-`ADMIN_PASSWORD` from `.env.local`.
+Open http://localhost:3000. For admin, open the link that `pnpm admin:super` printed, choose a
+password, and you're signed in. Next time, sign in at http://localhost:3000/admin with your email.
 
 ### Option A: a Neon branch (recommended)
 
@@ -63,7 +64,6 @@ pnpm db:down        # stops it (the data is kept in a Docker volume)
 |---|---|---|
 | `DATABASE_URL` | app, build, scripts | Postgres URL. On Neon use the **pooled** string. The Vercel/Neon integration sets it. |
 | `DATABASE_URL_UNPOOLED` | migrations | Neon **direct** string. Optional: falls back to `DATABASE_URL`. The integration sets it. |
-| `ADMIN_PASSWORD` | admin | At least 8 characters. Production refuses the value from `.env.example`. |
 | `AUTH_SECRET` | admin | At least 32 characters; signs the admin cookie. Generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. Changing it signs everyone out. |
 | `NEXT_PUBLIC_APP_NAME` | UI | Product name shown in the app (default "Grassroots Football"). |
 | `NEXT_PUBLIC_SITE_URL` | share links, link previews | The public address, e.g. `https://football.example.org`. On Vercel it falls back to the production domain, and preview deployments always use their own URL. |
@@ -113,7 +113,7 @@ account. Neon can also be created from inside Vercel.
    - `ENABLE_EXPERIMENTAL_COREPACK` = `1` (all environments).
      - Without it, Vercel installs with its own pnpm version (currently up to 10), which doesn't
        match this project's pnpm 12 settings.
-   - `ADMIN_PASSWORD` and `AUTH_SECRET` (Production and Preview; use different values for each).
+   - `AUTH_SECRET` (Production and Preview; use a different value for each).
    - `NEXT_PUBLIC_APP_NAME` (all environments).
 3. Importing starts a first deploy straight away. It fails with "DATABASE_URL … is missing" until
    Neon is connected (next section). That's expected.
@@ -178,11 +178,21 @@ keeps results entered in admin.
 Then **redeploy once**. The home page was built while the database was empty, and the site
 keeps that copy for up to an hour. A redeploy rebuilds it with the new organisation.
 
+Finally, create your own super-admin account on production (same terminal, same `DATABASE_URL`).
+`--site` makes the printed link point at the live site:
+
+```powershell
+pnpm admin:super --email you@example.com --name "Your Name" --site https://<your-app>.vercel.app
+```
+
+Open the printed link, choose a password, and you're signed in. Run the same command again if you
+ever forget your password: it prints a fresh reset link.
+
 ### 5. Check it
 
 - `https://<your-app>.vercel.app/` lists the organisation, and `/batho-pele` shows Stream A.
-- `/admin`: log in with the production `ADMIN_PASSWORD`, then confirm a test result and check
-  the public table.
+- `/admin`: sign in with your email and password, then confirm a test result and check the
+  public table.
 - Share a match link in WhatsApp: the preview shows the match graphic.
   - WhatsApp caches previews per link, so test with a link you haven't shared before.
 - `/graphics/batho-pele/matchday/qdl-open-stream-a-2026` returns the matchday PNG.
@@ -202,11 +212,44 @@ Add the domain under **Settings → Domains**. Then set `NEXT_PUBLIC_SITE_URL` t
 - **Backups**: Neon keeps history for point-in-time restore. The window depends on your Neon
   plan. Before a risky change, create a branch from production as a snapshot.
 
-## Admin (prototype)
+## Admin
 
-- Go to `/admin`. You sign in with the single `ADMIN_PASSWORD`, and a signed cookie keeps you
-  signed in for 14 days.
-- The header switches the organisation you are working in.
+### Accounts and organisations
+
+Everyone signs in at `/admin` with their own email and password. A signed cookie keeps them
+signed in for 14 days.
+
+- **Platform admin (super admin)**: you. Sees every organisation, creates new ones, and adds or
+  removes their admins under **Platform** (link in the admin header). Created with
+  `pnpm admin:super` (see [Local setup](#local-setup) and [Deploy](#4-seed-production-once)).
+- **Organisation admin**: works only in the organisations they were added to. The header switches
+  between them if there is more than one.
+
+Onboarding a new organisation:
+
+1. **Platform → + New organisation**: name, link name (the public URL, fixed once created),
+   colours, and optionally a logo link, Facebook page and hashtags.
+   - It starts **unlisted**: `/{link-name}` works, but it isn't shown on the home page until you
+     tap *List on home page*.
+2. **Add an admin**: their name and email. The platform creates a one-time link (valid 7 days).
+   Tap **WhatsApp** to send it. They open it, choose a password, and are signed in.
+   - The link is shown only once. If it gets lost or expires, tap *New invite link*.
+3. Set up its competition and teams (for now with a seed script, like Batho Pele; screens for this
+   come in the next milestone).
+
+Forgotten password: on the organisation's Platform page, tap *Password reset link* next to the
+person and send it to them (valid 24 hours). Removing someone signs them out straight away.
+
+Security:
+
+- Passwords are hashed with scrypt; invite and reset links are stored only as hashes.
+- **Login lockout**: 5 wrong attempts from one device/network within 15 minutes block sign-in from
+  there for 15 minutes. 100 failures from everywhere together pause sign-in for everyone for
+  15 minutes. A correct sign-in resets the count.
+- Changing your password (**Account**) signs you out on your other devices. Changing
+  `AUTH_SECRET` signs everyone out.
+
+### Day-to-day admin
 - **Results**: tap a match, use the +/− buttons, then *Save provisional* or *Confirm & publish*.
   - A confirmed result is published straight away, and the public table and pages update within
     seconds.
@@ -262,7 +305,8 @@ pnpm typecheck && pnpm lint && pnpm test
 |---|---|
 | Build: `DATABASE_URL is missing` | Connect Neon to that environment (Production/Preview) in Vercel, or set `DATABASE_URL` in `.env.local` locally. |
 | Build: pnpm version or `allowBuilds` errors during install | Set `ENABLE_EXPERIMENTAL_COREPACK=1` on the Vercel project and redeploy. |
-| Admin: "ADMIN_PASSWORD / AUTH_SECRET still have the example values" | Set real values for Production in Vercel, then redeploy. |
+| Admin: "AUTH_SECRET still has the example value" or "login isn't set up" | Set a real `AUTH_SECRET` for that environment in Vercel, then redeploy. |
+| Admin: "Too many wrong attempts from this device" | Wait the minutes shown. If you forgot the password, ask the platform admin for a reset link (platform admins: run `pnpm admin:super` again). |
 | Neon SQL editor: `relation "organisations" does not exist` | The editor is on a different branch from your app. Switch branches, or run `pnpm db:migrate` against that one. |
 | Link previews show an old image | WhatsApp and Facebook cache previews per link. Test a new link, or refresh the preview in Facebook's Sharing Debugger. |
 | Graphics show text instead of a logo | Check `logo_url`: a file under `public/` starting with `/`, or an https URL returning PNG, JPEG, SVG or WebP under 1.5 MB. |

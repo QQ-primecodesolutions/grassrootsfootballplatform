@@ -7,7 +7,8 @@ import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
  */
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  if (pathname === "/admin/login") return NextResponse.next();
+  // Sign-in and one-time invite/reset links work without a session.
+  if (pathname === "/admin/login" || pathname.startsWith("/admin/set-password/")) return NextResponse.next();
 
   const secret = process.env.AUTH_SECRET;
   const session = secret ? await verifySession(request.cookies.get(SESSION_COOKIE)?.value, secret) : null;

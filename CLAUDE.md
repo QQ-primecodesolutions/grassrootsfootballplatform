@@ -35,6 +35,7 @@ pnpm db:seed          # seed Batho Pele + Demo (idempotent; --overwrite-results 
 pnpm db:seed:stream-a-results  # load all Stream A results from tests/fixtures/stream-a-results.json
                       # (refuses while "unverified": true; "pending" results load as provisional)
 pnpm db:studio        # drizzle studio
+pnpm admin:super --email … --name …  # create/promote a super admin; prints a one-time password link
 pnpm db:up / db:down  # optional local Postgres via Docker
 ```
 
@@ -56,7 +57,8 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 - `lib/fixtures-paste/`: pure parser and name matcher for pasted fixtures
 - `lib/db/schema.ts`: the Drizzle schema
 - `lib/db/queries/`: the **only** place that reads or writes tenant data
-- `lib/auth/`: session cookie and `getCurrentAdmin()`
+- `lib/auth/`: session cookie, passwords (scrypt), one-time links, lockout, `getCurrentAdmin()`
+- `lib/platform/`: pure input schemas for the super admin's organisation and invite forms
 - `lib/time.ts`: SAST helpers
 - `lib/share/`: caption builders
 - `lib/env.ts`: validated env
@@ -78,14 +80,16 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
    `getCurrentAdmin()`. Look up any ID from a URL together with the org scope. Composite FKs
    `(x_id, organisation_id)` keep child rows in the same org. Never bypass this.
 4. **No player or person personal data.** Don't model players, registrations, match events,
-   officials or disciplinary records. Youth data needs a POPIA consent process first.
+   officials or disciplinary records. Youth data needs a POPIA consent process first. The only
+   people stored are admin users (name + email, to sign in).
 5. **Never fabricate results for a real organisation.** For Batho Pele, seed only the results the
    organiser supplied. Fictional data belongs only in the `demo` org.
 6. **Don't invent football rules.** Put rules in the competition `rules` JSON (zod, with
    defaults), flag the assumption in the UI, and ask.
 7. **The app name comes from `NEXT_PUBLIC_APP_NAME`.** Never hard-code a product name in the UI.
-8. **Admin auth is a prototype.** Everything goes through `getCurrentAdmin()`. Re-check it in every
-   Server Action, not just in `proxy.ts`/middleware.
+8. **Admin auth goes through `lib/auth`.** Org screens use `getCurrentAdmin()` (user + an org they
+   may access); platform screens use `getCurrentSuperAdmin()` (hands out the `PlatformScope` that
+   `lib/db/queries/platform.ts` requires). Re-check in every Server Action, not just in `proxy.ts`.
 9. **Keep it light on mobile data.** Design for 360 px Android first. Use Server Components by
    default and client components only for real interaction. Keep tables readable with a sticky
    team column, and scroll horizontally inside the table container only.
@@ -118,6 +122,13 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
   including provisional scores. Each function takes an `OrgScope` and an optional `db` for PGlite tests.
 - Every Server Action starts with `getCurrentAdmin()`, validates its input with zod, and calls
   `updateTag(...)` for each affected tag (see `tagsForMatchChange`), then `refresh()`.
+- Accounts: personal email + password logins; roles are super admin (`users.is_super_admin`) and
+  org admin (`memberships`). Invites and resets are one-time links (only a SHA-256 is stored) that
+  the super admin sends on WhatsApp; there's no email service. Bumping `users.session_version`
+  signs a user out everywhere (password change, link use, removal).
+- Login lockout (`lib/auth/lockout.ts`): failures are counted per IP in `login_failures`
+  (Postgres, because Vercel runs many instances): 5 in 15 min per IP, 100 globally.
+- New organisations start `listed = false`: reachable by link, hidden from "/" until listed.
 - Result rules live in `lib/match/result-input.ts` and captions in `lib/share/`. Both are pure and tested.
 
 ## Graphics (`lib/graphics/`)

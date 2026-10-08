@@ -16,6 +16,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:seed:stream-a-results": "tsx scripts/seed-stream-a-results.ts",
     "db:studio": "drizzle-kit studio",
+    "admin:super": "tsx scripts/create-super-admin.ts",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down"
   },

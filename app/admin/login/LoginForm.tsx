@@ -12,13 +12,24 @@ export function LoginForm() {
     <form action={action} className="mt-6 space-y-4">
       <input type="hidden" name="next" value={next} />
       <label className="block">
+        <span className="text-sm font-semibold">Email</span>
+        <input
+          name="email"
+          type="email"
+          autoComplete="username"
+          inputMode="email"
+          required
+          autoFocus
+          className="mt-1 block w-full rounded-lg border border-black/20 bg-white px-3 py-3 text-base"
+        />
+      </label>
+      <label className="block">
         <span className="text-sm font-semibold">Password</span>
         <input
           name="password"
           type="password"
           autoComplete="current-password"
           required
-          autoFocus
           className="mt-1 block w-full rounded-lg border border-black/20 bg-white px-3 py-3 text-base"
           aria-invalid={state.error ? true : undefined}
           aria-describedby={state.error ? "login-error" : undefined}
@@ -36,6 +47,7 @@ export function LoginForm() {
       >
         {pending ? "Signing in…" : "Sign in"}
       </button>
+      <p className="text-sm text-gray-600">Forgot your password? Ask the platform admin for a reset link.</p>
     </form>
   );
 }

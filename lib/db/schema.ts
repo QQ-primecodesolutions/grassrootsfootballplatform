@@ -41,6 +41,8 @@ export const matchStatus = pgEnum("match_status", [
 export const outcomeType = pgEnum("outcome_type", ["normal", "walkover", "awarded"]);
 export const resultState = pgEnum("result_state", ["provisional", "confirmed"]);
 export const teamGender = pgEnum("team_gender", ["male", "female", "mixed"]);
+export const memberRole = pgEnum("member_role", ["org_admin"]);
+export const authTokenPurpose = pgEnum("auth_token_purpose", ["invite", "reset"]);
 
 // ---------------------------------------------------------------------------
 // Shared columns
@@ -87,6 +89,8 @@ export const organisations = pgTable(
     tagline: text("tagline"),
     hashtags: text("hashtags").array().notNull().default(sql`'{}'::text[]`),
     socialLinks: jsonb("social_links").$type<SocialLinks>().notNull().default({}),
+    /** Shown in the list on "/". New organisations start unlisted until the super admin lists them. */
+    listed: boolean("listed").notNull().default(true),
     ...timestamps,
   },
   () => [
@@ -482,4 +486,78 @@ export const competitionSponsors = pgTable(
       foreignColumns: [sponsors.id, sponsors.organisationId],
     }).onDelete("cascade"),
   ],
+);
+
+// ---------------------------------------------------------------------------
+// Admin accounts (platform-level, not tenant-owned)
+//
+// Organiser logins only: a name and email to sign in with. Not players or other
+// people's personal data (see CLAUDE.md rule 4).
+// ---------------------------------------------------------------------------
+
+export const users = pgTable(
+  "users",
+  {
+    id: id(),
+    /** Stored lower-cased and trimmed (normaliseEmail in lib/platform/organisation-input.ts). */
+    email: text("email").notNull().unique(),
+    name: text("name").notNull(),
+    /** scrypt hash (lib/auth/password.ts). Null until the invite link is used. */
+    passwordHash: text("password_hash"),
+    isSuperAdmin: boolean("is_super_admin").notNull().default(false),
+    /** Bumped to sign the user out everywhere (password change, reset, removal). */
+    sessionVersion: integer("session_version").notNull().default(1),
+    disabledAt: timestamp("disabled_at", { withTimezone: true }),
+    lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  () => [check("users_email_lowercase", sql`email = lower(btrim(email))`)],
+);
+
+export const memberships = pgTable(
+  "memberships",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    organisationId: uuid("organisation_id")
+      .notNull()
+      .references(() => organisations.id, { onDelete: "cascade" }),
+    role: memberRole("role").notNull().default("org_admin"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ name: "memberships_pk", columns: [t.userId, t.organisationId] }),
+    index("memberships_org_idx").on(t.organisationId),
+  ],
+);
+
+/** One-time invite and password-reset links. Only a SHA-256 of the token is stored. */
+export const authTokens = pgTable(
+  "auth_tokens",
+  {
+    id: id(),
+    tokenHash: text("token_hash").notNull().unique(),
+    purpose: authTokenPurpose("purpose").notNull(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("auth_tokens_user_idx").on(t.userId)],
+);
+
+/** Failed sign-ins, for the login lockout. Kept in Postgres because Vercel runs many instances. */
+export const loginFailures = pgTable(
+  "login_failures",
+  {
+    id: id(),
+    /** Client IP as reported by the platform (x-real-ip / x-forwarded-for). */
+    ip: text("ip").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("login_failures_ip_created_idx").on(t.ip, t.createdAt), index("login_failures_created_idx").on(t.createdAt)],
 );

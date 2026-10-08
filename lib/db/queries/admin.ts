@@ -23,15 +23,8 @@ import { unsafeOrgScope, type OrgScope } from "./organisations";
  */
 
 // ---------------------------------------------------------------------------
-// Organisations (for the session and the org switcher)
+// Organisations
 // ---------------------------------------------------------------------------
-
-export async function listOrganisationsForAdmin(db: Db = getDb()) {
-  return db
-    .select({ id: organisations.id, slug: organisations.slug, name: organisations.name })
-    .from(organisations)
-    .orderBy(asc(organisations.name));
-}
 
 /** Resolve an organisation id from the session into a scope (null if it no longer exists). */
 export async function adminScopeForOrg(

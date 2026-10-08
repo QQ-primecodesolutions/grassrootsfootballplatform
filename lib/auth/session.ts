@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 
 /**
- * Prototype admin session: an HS256-signed JWT in an httpOnly cookie.
+ * Admin session: an HS256-signed JWT in an httpOnly cookie.
  * Kept free of Next.js imports so proxy.ts, Server Actions and tests can share it.
  */
 
@@ -9,17 +9,20 @@ export const SESSION_COOKIE = "admin_session";
 export const SESSION_MAX_AGE_SECONDS = 14 * 24 * 60 * 60; // 14 days (PLAN.md decision 13)
 
 export type SessionPayload = {
-  /** Always "admin" for the single-password prototype. */
-  sub: "admin";
-  /** The organisation the admin is currently working in. */
-  orgId: string;
+  /** The signed-in user's id. */
+  sub: string;
+  /** The organisation the user is working in (null: none yet, e.g. a new super admin). */
+  orgId: string | null;
+  /** users.session_version at sign-in; bumping it signs the user out everywhere. */
+  sv: number;
 };
 
 const key = (secret: string) => new TextEncoder().encode(secret);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function signSession(payload: SessionPayload, secret: string, now = new Date()): Promise<string> {
   const iat = Math.floor(now.getTime() / 1000);
-  return new SignJWT({ orgId: payload.orgId })
+  return new SignJWT({ orgId: payload.orgId, sv: payload.sv })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
     .setIssuedAt(iat)
@@ -27,13 +30,16 @@ export async function signSession(payload: SessionPayload, secret: string, now =
     .sign(key(secret));
 }
 
-/** Returns the payload, or null for a missing, tampered or expired token. */
+/** Returns the payload, or null for a missing, tampered, expired or old-format token. */
 export async function verifySession(token: string | undefined, secret: string): Promise<SessionPayload | null> {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, key(secret), { algorithms: ["HS256"] });
-    if (payload.sub !== "admin" || typeof payload.orgId !== "string") return null;
-    return { sub: "admin", orgId: payload.orgId };
+    const { sub, orgId, sv } = payload;
+    if (typeof sub !== "string" || !UUID.test(sub)) return null;
+    if (orgId !== null && (typeof orgId !== "string" || !UUID.test(orgId))) return null;
+    if (typeof sv !== "number" || !Number.isInteger(sv)) return null;
+    return { sub, orgId, sv };
   } catch {
     return null;
   }

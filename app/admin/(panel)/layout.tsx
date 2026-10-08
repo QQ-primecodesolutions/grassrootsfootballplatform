@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { AdminNav } from "@/components/admin/AdminNav";
-import { getCurrentAdmin } from "@/lib/auth";
-import { listOrganisationsForAdmin } from "@/lib/db/queries/admin";
+import { getCurrentUser } from "@/lib/auth";
+import { listAccessibleOrgs, resolveAdminOrg } from "@/lib/db/queries/accounts";
 import { publicEnv } from "@/lib/env";
 import { logout, switchOrganisation } from "../actions";
 
@@ -31,6 +31,9 @@ export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
             </button>
           </form>
         </div>
+        <Suspense fallback={<div className="h-8" />}>
+          <UserBar />
+        </Suspense>
       </header>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-24 pt-4">{children}</main>
       <AdminNav />
@@ -38,11 +41,12 @@ export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
   );
 }
 
-/** Shows the current organisation; lets the single operator switch between partners. */
+/** Shows the current organisation; lets the user switch between the ones they can access. */
 async function OrgSwitcher() {
-  const { org } = await getCurrentAdmin();
-  const orgs = await listOrganisationsForAdmin();
-  if (orgs.length <= 1) return <span className="block truncate text-sm">{org.name}</span>;
+  const { user, orgId } = await getCurrentUser();
+  const [current, orgs] = await Promise.all([resolveAdminOrg(user, orgId), listAccessibleOrgs(user)]);
+  if (!current) return <span className="block truncate text-sm opacity-80">No organisation yet</span>;
+  if (orgs.length <= 1) return <span className="block truncate text-sm">{current.org.name}</span>;
   return (
     <form action={switchOrganisation} className="flex items-center gap-1">
       <label className="sr-only" htmlFor="org-switch">
@@ -51,7 +55,7 @@ async function OrgSwitcher() {
       <select
         id="org-switch"
         name="orgId"
-        defaultValue={org.id}
+        defaultValue={current.org.id}
         className="min-w-0 flex-1 truncate rounded bg-gray-800 px-2 py-2 text-sm text-white"
       >
         {orgs.map((o) => (
@@ -64,5 +68,22 @@ async function OrgSwitcher() {
         Switch
       </button>
     </form>
+  );
+}
+
+async function UserBar() {
+  const { user } = await getCurrentUser();
+  return (
+    <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 pb-2 text-sm">
+      <span className="min-w-0 flex-1 truncate opacity-70">{user.name}</span>
+      <Link href="/admin/account" className="py-1 underline opacity-90">
+        Account
+      </Link>
+      {user.isSuperAdmin ? (
+        <Link href="/admin/platform" className="py-1 font-semibold underline">
+          Platform
+        </Link>
+      ) : null}
+    </div>
   );
 }

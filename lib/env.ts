@@ -10,7 +10,6 @@ const serverSchema = z.object({
 });
 
 const authSchema = z.object({
-  ADMIN_PASSWORD: z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters"),
   AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
 });
 
@@ -35,7 +34,7 @@ export function getDbEnv() {
 }
 
 /** Values copied from .env.example; refused in production. */
-const EXAMPLE_SECRETS = new Set(["change-me-please", "replace-with-a-long-random-string-of-32-plus-chars"]);
+const EXAMPLE_SECRETS = new Set(["replace-with-a-long-random-string-of-32-plus-chars"]);
 
 let authEnv: z.infer<typeof authSchema> | undefined;
 export function getAuthEnv() {
@@ -44,9 +43,9 @@ export function getAuthEnv() {
     if (
       process.env.NODE_ENV === "production" &&
       process.env.VERCEL_ENV !== "preview" &&
-      (EXAMPLE_SECRETS.has(parsed.ADMIN_PASSWORD) || EXAMPLE_SECRETS.has(parsed.AUTH_SECRET))
+      EXAMPLE_SECRETS.has(parsed.AUTH_SECRET)
     ) {
-      throw new Error("ADMIN_PASSWORD / AUTH_SECRET still have the example values from .env.example. Set real ones.");
+      throw new Error("AUTH_SECRET still has the example value from .env.example. Set a real one.");
     }
     authEnv = parsed;
   }

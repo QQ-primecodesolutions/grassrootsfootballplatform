@@ -57,7 +57,8 @@ export async function listOrganisations(): Promise<PublicOrganisation[]> {
   "use cache";
   cacheLife("hours");
   cacheTag(ORGANISATIONS_TAG);
-  const rows = await getDb().select().from(organisations).orderBy(asc(organisations.name));
+  // Unlisted organisations (new, not ready yet) are still reachable by their link.
+  const rows = await getDb().select().from(organisations).where(eq(organisations.listed, true)).orderBy(asc(organisations.name));
   return rows.map(toPublic);
 }
 
