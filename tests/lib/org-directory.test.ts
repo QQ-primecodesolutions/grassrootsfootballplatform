@@ -20,3 +20,11 @@ describe("organisation search", () => {
     expect(matchesQuery(org, "pele maluti")).toBe(false);
   });
 });
+
+describe("homepage WhatsApp link", () => {
+  it("opens a chat with the South African number in international format and a ready message", async () => {
+    const { CONTACT_WHATSAPP, whatsappChatUrl } = await import("@/lib/contact");
+    expect(CONTACT_WHATSAPP).toBe("27672092558");
+    expect(whatsappChatUrl(CONTACT_WHATSAPP, "Hi there")).toBe("https://wa.me/27672092558?text=Hi%20there");
+  });
+});
