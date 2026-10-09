@@ -2,10 +2,11 @@ import Image from "next/image";
 import { LatestResults } from "@/components/public/LatestResults";
 import { OrgDirectory, type DirectoryOrg } from "@/components/public/OrgDirectory";
 import { PlatformCredit } from "@/components/public/PlatformCredit";
-import { listLatestResults, listOrganisations } from "@/lib/db/queries";
+import { listCompetitions, listLatestResults, listOrganisations, resolveOrgBySlug } from "@/lib/db/queries";
 import { CONTACT_WHATSAPP, whatsappChatUrl } from "@/lib/contact";
 import { publicEnv } from "@/lib/env";
 import { HERO_PHOTOS } from "@/lib/home";
+import { directoryCard } from "@/lib/public/directory";
 import { publishedTestimonials } from "@/lib/testimonials";
 
 const FEATURES = [
@@ -19,15 +20,12 @@ export default async function HomePage() {
   const [organisations, latest] = await Promise.all([listOrganisations(), listLatestResults(6)]);
   const testimonials = publishedTestimonials();
   const slides = HERO_PHOTOS.length;
-  const orgs: DirectoryOrg[] = organisations.map((o) => ({
-    id: o.id,
-    slug: o.slug,
-    name: o.name,
-    shortName: o.shortName,
-    tagline: o.tagline,
-    logoUrl: o.logoUrl,
-    primaryColor: o.primaryColor,
-  }));
+  const orgs: DirectoryOrg[] = await Promise.all(
+    organisations.map(async (o) => {
+      const resolved = await resolveOrgBySlug(o.slug);
+      return directoryCard(o, resolved ? await listCompetitions(resolved.scope) : []);
+    }),
+  );
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-page">

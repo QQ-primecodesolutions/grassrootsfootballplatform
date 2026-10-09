@@ -3,26 +3,20 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 
-export type DirectoryOrg = {
-  id: string;
-  slug: string;
-  name: string;
-  shortName: string | null;
-  tagline: string | null;
-  logoUrl: string | null;
-  primaryColor: string;
-};
+import type { DirectoryCard } from "@/lib/public/directory";
+
+export type DirectoryOrg = DirectoryCard;
 
 /** Normalise for matching: lower case, no accents, single spaces. */
 function norm(s: string): string {
   return s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 }
 
-/** Every word typed must appear in the organisation's name, short name or tagline. */
+/** Every word typed must appear in the card's title, "run by" name, tagline or search text. */
 export function matchesQuery(org: DirectoryOrg, query: string): boolean {
   const words = norm(query).split(" ").filter(Boolean);
   if (!words.length) return true;
-  const hay = norm([org.name, org.shortName, org.tagline].filter(Boolean).join(" "));
+  const hay = norm([org.title, org.runBy, org.tagline, org.searchText].filter(Boolean).join(" "));
   return words.every((w) => hay.includes(w));
 }
 
@@ -81,12 +75,13 @@ export function OrgDirectory({ orgs, searchPlaceholder }: { orgs: DirectoryOrg[]
                     <img src={o.logoUrl} alt="" loading="lazy" className="max-h-12 max-w-full object-contain" />
                   ) : (
                     <span className="font-display text-lg font-bold" style={{ color: o.primaryColor }}>
-                      {(o.shortName ?? o.name).slice(0, 3).toUpperCase()}
+                      {o.title.slice(0, 3).toUpperCase()}
                     </span>
                   )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-semibold leading-tight">{o.name}</span>
+                  <span className="block font-semibold leading-tight">{o.title}</span>
+                  {o.runBy ? <span className="mt-0.5 block text-sm text-gray-700">Run by {o.runBy}</span> : null}
                   {o.tagline ? <span className="mt-0.5 block truncate text-sm text-muted">{o.tagline}</span> : null}
                   <span className="mt-1 block text-sm font-semibold text-emerald-800">Tables, fixtures &amp; results ›</span>
                 </span>
