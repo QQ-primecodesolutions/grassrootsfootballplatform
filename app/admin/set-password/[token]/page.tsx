@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -6,6 +7,7 @@ import { PasswordFields } from "@/components/admin/PasswordForm";
 import { PageSkeleton } from "@/components/public/PageSkeleton";
 import { peekLinkToken } from "@/lib/db/queries/accounts";
 import { publicEnv } from "@/lib/env";
+import platformLogo from "@/public/brand/platform-logo.png";
 import { setPasswordFromLink } from "../../actions";
 
 export const metadata: Metadata = {
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
 export default function SetPasswordPage({ params }: PageProps<"/admin/set-password/[token]">) {
   return (
     <main className="mx-auto w-full max-w-sm flex-1 px-4 py-12">
-      <p className="text-sm font-semibold uppercase tracking-wide text-muted">{publicEnv.NEXT_PUBLIC_APP_NAME}</p>
+      <Image src={platformLogo} alt={publicEnv.NEXT_PUBLIC_APP_NAME} priority className="mb-6 h-auto w-56" />
       <Suspense fallback={<PageSkeleton />}>
         <SetPassword params={params} />
       </Suspense>
