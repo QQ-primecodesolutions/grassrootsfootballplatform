@@ -169,7 +169,8 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
   no recognisable minors without consent.
 - Homepage cards come from `directoryCard` (`lib/public/directory.ts`): when the featured
   competition has its own logo (a parent body like the QDL), the card shows that brand, with
-  "Run by" the organisation. The link is still the organisation.
+  "Run by" the organisation. The organisation pages' header, page titles and link-preview site
+  name use the same brand. The link is still the organisation.
 - `listLatestResults` (`lib/db/queries/latest.ts`) is the one cross-organisation read: confirmed
   results from listed organisations only, tagged with every listed org's tag.
 - Quotes (`lib/testimonials.ts`) are shown only when `approved: true`. Never publish words in a

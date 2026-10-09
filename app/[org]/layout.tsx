@@ -5,21 +5,29 @@ import { getCompetitionData, listCompetitions } from "@/lib/db/queries";
 import { publicEnv } from "@/lib/env";
 import { competitionOgTarget, ogImageMetadata, versionOf } from "@/lib/graphics/links";
 import { PlatformCredit } from "@/components/public/PlatformCredit";
+import { directoryCard } from "@/lib/public/directory";
 import { facebookUrl } from "@/lib/public/links";
 import { brandStyle, requireOrg } from "@/lib/public/org";
 
 export async function generateMetadata({ params }: LayoutProps<"/[org]">): Promise<Metadata> {
   const { org: slug } = await params;
   const { org, scope } = await requireOrg(slug);
-  const short = org.shortName ?? org.name;
-  const [first] = await listCompetitions(scope);
+  const competitions = await listCompetitions(scope);
+  // A parent league's brand leads when the featured competition has its own logo (see directoryCard).
+  const brand = directoryCard(org, competitions);
+  const short = brand.runBy ? brand.title : (org.shortName ?? org.name);
+  const [first] = competitions;
   const featured = first ? await getCompetitionData(scope, first.slug) : null;
   return {
-    title: { default: org.name, template: `%s · ${short}` },
-    description: org.tagline ?? `Tables, fixtures and results from ${org.name}.`,
-    openGraph: { siteName: org.name },
+    title: { default: brand.title, template: `%s · ${short}` },
+    description: brand.runBy
+      ? `Tables, fixtures and results from ${brand.title}, run by ${brand.runBy}.`
+      : (org.tagline ?? `Tables, fixtures and results from ${org.name}.`),
+    openGraph: { siteName: brand.title },
     // Default preview for the organisation's pages: its featured competition's table.
-    ...(featured ? ogImageMetadata(competitionOgTarget(org.slug, featured, "table"), versionOf(org, featured), org.name, org.name) : {}),
+    ...(featured
+      ? ogImageMetadata(competitionOgTarget(org.slug, featured, "table"), versionOf(org, featured), brand.title, brand.title)
+      : {}),
   };
 }
 
@@ -37,7 +45,8 @@ export default function OrgLayout({ children, params }: LayoutProps<"/[org]">) {
 
 async function OrgFrame({ params, children }: Pick<LayoutProps<"/[org]">, "params" | "children">) {
   const { org: slug } = await params;
-  const { org } = await requireOrg(slug);
+  const { org, scope } = await requireOrg(slug);
+  const brand = directoryCard(org, await listCompetitions(scope));
   const facebook = facebookUrl(org.socialLinks);
   const initials = (org.shortName ?? org.name)
     .split(/\s+/)
@@ -51,10 +60,10 @@ async function OrgFrame({ params, children }: Pick<LayoutProps<"/[org]">, "param
       <header className="bg-brand text-on-brand">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           <Link href={`/${org.slug}`} className="flex min-w-0 items-center gap-3">
-            {org.logoUrl ? (
+            {brand.logoUrl ? (
               // Plain <img>: organiser-supplied URLs on any host; small and cached by the browser.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={org.logoUrl} alt="" height={40} className="h-10 w-auto max-w-24 shrink-0 rounded bg-white object-contain p-0.5" />
+              <img src={brand.logoUrl} alt="" height={40} className="h-10 w-auto max-w-24 shrink-0 rounded bg-white object-contain p-0.5" />
             ) : (
               <span
                 aria-hidden
@@ -65,9 +74,13 @@ async function OrgFrame({ params, children }: Pick<LayoutProps<"/[org]">, "param
             )}
             <span className="min-w-0">
               <span className="line-clamp-2 font-display text-lg font-bold uppercase leading-tight tracking-wide">
-                {org.name}
+                {brand.title}
               </span>
-              {org.tagline ? <span className="block truncate text-xs opacity-80">{org.tagline}</span> : null}
+              {brand.runBy ? (
+                <span className="block truncate text-xs opacity-80">Run by {brand.runBy}</span>
+              ) : org.tagline ? (
+                <span className="block truncate text-xs opacity-80">{org.tagline}</span>
+              ) : null}
             </span>
           </Link>
         </div>
