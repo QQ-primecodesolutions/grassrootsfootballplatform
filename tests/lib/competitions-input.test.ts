@@ -43,7 +43,7 @@ describe("competition form", () => {
       { slug: "match" },
       { slug: "team" },
       { slug: "a b" },
-      { type: "group_knockout" },
+      { type: "tournament" },
       { expectedMatchCount: "0" },
       { expectedMatchCount: "2.5" },
       { season: "" },

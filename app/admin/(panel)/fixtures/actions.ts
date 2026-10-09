@@ -6,6 +6,7 @@ import { getCurrentAdmin } from "@/lib/auth";
 import { competitionTag, orgTag, teamTag } from "@/lib/cache/tags";
 import { ensureVenue, insertFixtures, listCompetitionsForAdmin, type NewFixture } from "@/lib/db/queries/admin";
 import type { OrgScope } from "@/lib/db/queries";
+import { stageProblem } from "@/lib/public/groups";
 import { sastDateTime } from "@/lib/time";
 
 export type FixtureFormState = {
@@ -37,6 +38,7 @@ const common = {
   venueId: z.uuid().optional().or(z.literal("").transform(() => undefined)),
   newVenue: optionalText(80),
   roundLabel: optionalText(40),
+  stage: z.enum(["group", "knockout"]).optional(),
 };
 
 const roundNumberOf = (label: string | null) => {
@@ -85,8 +87,13 @@ export async function createFixture(prev: FixtureFormState, formData: FormData):
   const away = competition.entries.find((e) => e.entryId === f.awayEntryId);
   if (!home || !away) return { ok: false, message: "Both teams must be entered in this competition", nonce };
 
+  const stage = competition.type === "group_knockout" ? (f.stage ?? "group") : null;
+  const problem = stageProblem(stage, home.groupLabel, away.groupLabel);
+  if (problem) return { ok: false, message: problem, nonce };
+
   const venueId = await resolveVenue(scope, f.venueId, f.newVenue);
   const fixture: NewFixture = {
+    stage,
     homeEntryId: home.entryId,
     awayEntryId: away.entryId,
     kickoffAt: sastDateTime(f.date, f.time ?? "00:00"),
@@ -151,11 +158,19 @@ export async function savePastedFixtures(prev: FixtureFormState, formData: FormD
     if (f.homeEntryId === f.awayEntryId) return { ok: false, message: "A team can't play itself", nonce };
   }
   if (p.aliases.some((a) => !teamIds.has(a.teamId))) return { ok: false, message: "Unknown team for an alias", nonce };
+  const stage = competition.type === "group_knockout" ? (p.stage ?? "group") : null;
+  for (const f of p.fixtures) {
+    const home = entries.get(f.homeEntryId)!;
+    const away = entries.get(f.awayEntryId)!;
+    const problem = stageProblem(stage, home.groupLabel, away.groupLabel);
+    if (problem) return { ok: false, message: `${home.name} v ${away.name}: ${problem}`, nonce };
+  }
 
   const venueId = await resolveVenue(scope, p.venueId, p.newVenue);
   const fixtures: NewFixture[] = p.fixtures.map((f) => {
     const time = f.time ?? p.time;
     return {
+      stage,
       homeEntryId: f.homeEntryId,
       awayEntryId: f.awayEntryId,
       kickoffAt: sastDateTime(p.date, time ?? "00:00"),

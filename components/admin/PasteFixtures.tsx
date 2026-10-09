@@ -5,7 +5,7 @@ import { useActionState, useMemo, useState } from "react";
 import { savePastedFixtures, type FixtureFormState } from "@/app/admin/(panel)/fixtures/actions";
 import { matchTeamName, type NameMatch } from "@/lib/fixtures-paste/match";
 import { parseFixtureText } from "@/lib/fixtures-paste/parse";
-import { Field, FormMessage, VenuePicker, inputClass, type CompetitionOption, type VenueOption } from "./fields";
+import { Field, FormMessage, StageField, VenuePicker, inputClass, type CompetitionOption, type VenueOption } from "./fields";
 
 type Side = "home" | "away";
 type Override = { entryId: string; learn: boolean };
@@ -24,6 +24,7 @@ export function PasteFixtures({ competitions, venues, today }: { competitions: C
   const [venueId, setVenueId] = useState("");
   const [newVenue, setNewVenue] = useState("");
   const [round, setRound] = useState("");
+  const [stage, setStage] = useState<"group" | "knockout">("group");
   const [text, setText] = useState("");
   const [overrides, setOverrides] = useState<Record<string, Override>>({});
   const [excluded, setExcluded] = useState<Record<number, boolean>>({});
@@ -79,6 +80,7 @@ export function PasteFixtures({ competitions, venues, today }: { competitions: C
     venueId: venueId && venueId !== "__new" ? venueId : undefined,
     newVenue: venueId === "__new" ? newVenue : undefined,
     roundLabel: round || undefined,
+    stage: competition?.type === "group_knockout" ? stage : undefined,
     fixtures: included
       .filter((r) => !r.problem)
       .map((r) => ({ homeEntryId: r.homeRes.entryId!, awayEntryId: r.awayRes.entryId!, time: r.time })),
@@ -184,6 +186,7 @@ export function PasteFixtures({ competitions, venues, today }: { competitions: C
         </Field>
       </div>
       <VenuePicker venues={venues} venueId={venueId} newVenue={newVenue} onVenueId={setVenueId} onNewVenue={setNewVenue} />
+      {competition?.type === "group_knockout" ? <StageField value={stage} onChange={setStage} /> : null}
       <Field label="Round" hint='e.g. "Round 8"'>
         <input value={round} onChange={(e) => setRound(e.target.value)} maxLength={40} className={inputClass} />
       </Field>

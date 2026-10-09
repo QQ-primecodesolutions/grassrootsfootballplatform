@@ -147,7 +147,7 @@ async function AdminHome() {
       ) : null}
 
       {competitions
-        .filter((c) => c.type === "league" && !c.rulesConfirmed)
+        .filter((c) => (c.type === "league" || c.type === "group_knockout") && !c.rulesConfirmed)
         .map((c) => (
           <Link
             key={c.id}

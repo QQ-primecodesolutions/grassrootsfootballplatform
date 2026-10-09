@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import {
   addAdjustmentAction,
   addSponsorAction,
+  setGroupsAction,
   addEntriesAction,
   addNewTeamsAction,
   createCompetitionAction,
@@ -14,6 +15,7 @@ import {
 } from "@/app/admin/(panel)/competitions/actions";
 import { COMPETITION_TYPE_LABELS } from "@/lib/competitions/input";
 import { slugify } from "@/lib/fixtures-paste/normalize";
+import { GROUP_LETTERS } from "@/lib/public/groups";
 import { TIE_BREAKER_LABELS, TIE_BREAKERS, type CompetitionRules } from "@/lib/rules";
 import { Field, FormMessage, inputClass } from "./fields";
 import { LogoField } from "./LogoField";
@@ -66,11 +68,12 @@ export function CompetitionForm({
       ) : (
         <fieldset>
           <legend className="text-sm font-semibold">Format</legend>
-          <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {(
               [
                 ["league", "League", "Everyone plays everyone; a table"],
                 ["knockout", "Knockout / cup", "Rounds, a winner each match"],
+                ["group_knockout", "Groups + knockout", "Group tables, then knockout rounds"],
                 ["friendly", "Friendlies", "One-off matches; no table, draws allowed"],
               ] as const
             ).map(([value, label, hint]) => (
@@ -417,6 +420,46 @@ export function SponsorLogoForm({
       <FormMessage ok={state.ok} message={state.message} />
       <button type="submit" disabled={pending} className="h-11 w-full rounded-lg bg-white font-semibold ring-1 ring-black/15 disabled:opacity-60">
         {pending ? "Saving…" : "Save logo"}
+      </button>
+    </form>
+  );
+}
+
+/** Groups + knockout: choose each team's group. */
+export function GroupsForm({
+  competitionId,
+  entries,
+}: {
+  competitionId: string;
+  entries: { entryId: string; name: string; groupLabel: string | null }[];
+}) {
+  const [state, action, pending] = useActionState(setGroupsAction, initial);
+  return (
+    <form action={action} className="space-y-3">
+      <input type="hidden" name="competitionId" value={competitionId} />
+      <ul className="divide-y divide-black/5">
+        {entries.map((e) => (
+          <li key={e.entryId} className="flex items-center gap-3 py-2">
+            <span className="min-w-0 flex-1 truncate font-semibold">{e.name}</span>
+            <select
+              name={`group:${e.entryId}`}
+              defaultValue={e.groupLabel ?? ""}
+              aria-label={`Group for ${e.name}`}
+              className="h-11 rounded-lg border border-black/20 bg-white px-2"
+            >
+              <option value="">No group</option>
+              {GROUP_LETTERS.map((g) => (
+                <option key={g} value={g}>
+                  Group {g}
+                </option>
+              ))}
+            </select>
+          </li>
+        ))}
+      </ul>
+      <FormMessage ok={state.ok} message={state.message} />
+      <button type="submit" disabled={pending} className={submitClass}>
+        {pending ? "Saving…" : "Save groups"}
       </button>
     </form>
   );

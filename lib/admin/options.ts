@@ -5,6 +5,7 @@ export function competitionOptions(competitions: AdminCompetition[]) {
   return competitions.map((c) => ({
     id: c.id,
     label: [c.name, [c.streamLabel, c.area].filter(Boolean).join(" · ")].filter(Boolean).join(" — ") + ` (${c.seasonName})`,
-    entries: c.entries.map((e) => ({ entryId: e.entryId, teamId: e.teamId, name: e.name, aliases: e.aliases })),
+    type: c.type,
+    entries: c.entries.map((e) => ({ entryId: e.entryId, teamId: e.teamId, name: e.name, aliases: e.aliases, groupLabel: e.groupLabel })),
   }));
 }

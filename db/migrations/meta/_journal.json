@@ -50,6 +50,13 @@
       "when": 1791523661535,
       "tag": "0006_scorer_role",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791527627506,
+      "tag": "0007_match_stage",
+      "breakpoints": true
     }
   ]
 }

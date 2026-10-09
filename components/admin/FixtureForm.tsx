@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createFixture, type FixtureFormState } from "@/app/admin/(panel)/fixtures/actions";
-import { Field, FormMessage, VenuePicker, inputClass, type CompetitionOption, type VenueOption } from "./fields";
+import { Field, FormMessage, StageField, VenuePicker, inputClass, type CompetitionOption, type VenueOption } from "./fields";
 
 const initial: FixtureFormState = { ok: false, message: null, nonce: 0 };
 
@@ -18,6 +18,7 @@ export function FixtureForm({ competitions, venues, today }: { competitions: Com
   const [venueId, setVenueId] = useState("");
   const [newVenue, setNewVenue] = useState("");
   const [round, setRound] = useState("");
+  const [stage, setStage] = useState<"group" | "knockout">("group");
 
   // After a successful save, clear only the teams (derived-state reset on a new result).
   const [seenNonce, setSeenNonce] = useState(state.nonce);
@@ -30,7 +31,9 @@ export function FixtureForm({ competitions, venues, today }: { competitions: Com
     }
   }
 
-  const entries = competitions.find((c) => c.id === competitionId)?.entries ?? [];
+  const competition = competitions.find((c) => c.id === competitionId);
+  const entries = competition?.entries ?? [];
+  const label = (e: (typeof entries)[number]) => (e.groupLabel ? `${e.name} (Group ${e.groupLabel})` : e.name);
 
   return (
     <form action={action} className="space-y-4">
@@ -59,7 +62,7 @@ export function FixtureForm({ competitions, venues, today }: { competitions: Com
             <option value="">Choose…</option>
             {entries.map((e) => (
               <option key={e.entryId} value={e.entryId} disabled={e.entryId === away}>
-                {e.name}
+                {label(e)}
               </option>
             ))}
           </select>
@@ -69,7 +72,7 @@ export function FixtureForm({ competitions, venues, today }: { competitions: Com
             <option value="">Choose…</option>
             {entries.map((e) => (
               <option key={e.entryId} value={e.entryId} disabled={e.entryId === home}>
-                {e.name}
+                {label(e)}
               </option>
             ))}
           </select>
@@ -88,6 +91,8 @@ export function FixtureForm({ competitions, venues, today }: { competitions: Com
       <VenuePicker venues={venues} venueId={venueId} newVenue={newVenue} onVenueId={setVenueId} onNewVenue={setNewVenue} />
       {/* The picker's "__new" sentinel is not a real id. */}
       {venueId === "__new" ? <input type="hidden" name="venueId" value="" /> : null}
+
+      {competition?.type === "group_knockout" ? <StageField value={stage} onChange={setStage} /> : null}
 
       <Field label="Round" hint='e.g. "Round 8" or "Semi-final"'>
         <input name="roundLabel" value={round} onChange={(e) => setRound(e.target.value)} maxLength={40} className={inputClass} />

@@ -46,7 +46,14 @@ export async function adminScopeForOrg(
 // Competitions, entries, venues
 // ---------------------------------------------------------------------------
 
-export type AdminEntry = { entryId: string; teamId: string; name: string; shortName: string; aliases: string[] };
+export type AdminEntry = {
+  entryId: string;
+  teamId: string;
+  name: string;
+  shortName: string;
+  aliases: string[];
+  groupLabel: string | null;
+};
 export type AdminCompetition = {
   id: string;
   slug: string;
@@ -91,6 +98,7 @@ export async function listCompetitionsForAdmin(scope: OrgScope, db: Db = getDb()
       teamId: teams.id,
       name: teams.name,
       shortName: teams.shortName,
+      groupLabel: competitionEntries.groupLabel,
     })
     .from(competitionEntries)
     .innerJoin(teams, eq(teams.id, competitionEntries.teamId))
@@ -143,6 +151,7 @@ export type AdminMatch = {
   competitionType: "league" | "knockout" | "group_knockout" | "friendly";
   streamLabel: string | null;
   roundLabel: string | null;
+  stage: "group" | "knockout" | null;
   kickoffAt: Date | null;
   kickoffTimeTbc: boolean;
   status: MatchStatus;
@@ -207,6 +216,7 @@ function toAdminMatch(
     competitionType: row.competitionType,
     streamLabel: row.streamLabel,
     roundLabel: m.roundLabel,
+    stage: m.stage,
     kickoffAt: m.kickoffAt,
     kickoffTimeTbc: m.kickoffTimeTbc,
     status: m.status,
@@ -296,6 +306,7 @@ export async function saveMatchResult(
 export type NewFixture = {
   homeEntryId: string;
   awayEntryId: string;
+  stage?: "group" | "knockout" | null;
   kickoffAt: Date;
   kickoffTimeTbc: boolean;
   venueId: string | null;

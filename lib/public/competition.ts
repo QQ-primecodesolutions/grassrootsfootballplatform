@@ -20,7 +20,7 @@ export async function competitionMetadata(
 ): Promise<Metadata> {
   const { org, data } = await requireCompetition(orgSlug, competitionSlug);
   const c = data.competition;
-  const section = tab === "table" ? (c.type === "league" ? "Table" : "Matches") : tab === "fixtures" ? "Fixtures" : "Results";
+  const section = tab === "table" ? (c.type === "league" ? "Table" : c.type === "group_knockout" ? "Groups" : "Matches") : tab === "fixtures" ? "Fixtures" : "Results";
   const name = [c.name, competitionSubtitle(c)].filter(Boolean).join(" — ");
   return {
     title: `${section} · ${name}`,

@@ -11,6 +11,7 @@ import {
   competitionUpdateSchema,
   parseTeamNames,
   rulesFormSchema,
+  parseGroupForm,
   sponsorAddSchema,
   sponsorLogoSchema,
 } from "@/lib/competitions/input";
@@ -28,6 +29,7 @@ import {
   deleteCompetition,
   removeEntry,
   removePointsAdjustment,
+  setEntryGroups,
   updateCompetition,
   updateCompetitionRules,
 } from "@/lib/db/queries/setup";
@@ -191,4 +193,13 @@ export async function updateSponsorLogoAction(prev: SetupFormState, formData: Fo
   if (!(await updateSponsorLogo(scope, parsed.data.sponsorId, parsed.data.logoUrl))) return fail(prev, "Unknown sponsor");
   invalidate(scope, id.data.competitionId);
   return done(prev, parsed.data.logoUrl ? "Logo saved." : "Logo removed: the name is shown instead.");
+}
+
+export async function setGroupsAction(prev: SetupFormState, formData: FormData): Promise<SetupFormState> {
+  const { scope } = await getCurrentAdmin();
+  const id = ids.safeParse(Object.fromEntries(formData));
+  if (!id.success) return fail(prev, "Unknown competition");
+  if (!(await setEntryGroups(scope, id.data.competitionId, parseGroupForm(formData.entries())))) return fail(prev, "Unknown competition");
+  invalidate(scope, id.data.competitionId);
+  return done(prev, "Groups saved. The group tables update straight away.");
 }

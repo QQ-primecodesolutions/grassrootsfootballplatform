@@ -29,8 +29,21 @@ export function FormMessage({ ok, message }: { ok: boolean; message: string | nu
 export type CompetitionOption = {
   id: string;
   label: string;
-  entries: { entryId: string; teamId: string; name: string; aliases: string[] }[];
+  type: "league" | "knockout" | "group_knockout" | "friendly";
+  entries: { entryId: string; teamId: string; name: string; aliases: string[]; groupLabel?: string | null }[];
 };
+
+/** Groups + knockout competitions: is this fixture a group match or a knockout match? */
+export function StageField({ value, onChange }: { value: "group" | "knockout"; onChange: (v: "group" | "knockout") => void }) {
+  return (
+    <Field label="Stage" hint="Group matches count towards the group tables; knockout matches need a winner.">
+      <select name="stage" value={value} onChange={(e) => onChange(e.target.value as "group" | "knockout")} className={inputClass}>
+        <option value="group">Group stage</option>
+        <option value="knockout">Knockout</option>
+      </select>
+    </Field>
+  );
+}
 export type VenueOption = { id: string; name: string };
 
 /** Venue picker with a "new venue" option (created on save). */

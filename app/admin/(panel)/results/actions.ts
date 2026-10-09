@@ -30,6 +30,7 @@ export async function saveResult(_prev: SaveResultState, formData: FormData): Pr
 
   const built = buildResultPatch(parsed.data, {
     competitionType: match.competitionType,
+    stage: match.stage,
     homeEntryId: match.homeEntryId,
     awayEntryId: match.awayEntryId,
   });

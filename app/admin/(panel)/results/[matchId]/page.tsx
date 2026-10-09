@@ -42,6 +42,7 @@ async function ResultEntry({ params }: Pick<PageProps<"/admin/results/[matchId]"
   const formMatch: ResultFormMatch = {
     id: m.id,
     competitionType: m.competitionType,
+    stage: m.stage,
     homeName: m.home.name,
     awayName: m.away.name,
     status: m.status,

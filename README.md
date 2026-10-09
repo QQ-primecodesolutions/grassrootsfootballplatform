@@ -295,7 +295,15 @@ e.g. "Friendlies", with the **Friendlies** format. There's no table, and a level
 Extra time or a penalty shootout can be recorded if one was played. Opponents from outside the
 league are just teams: paste their names. Their matches never affect a league table.
 
-Group stages (groups, then knockouts) aren't supported yet.
+**Groups + knockout** (e.g. a winter tournament):
+
+1. Create the competition with the **Groups + knockout** format and add its teams.
+2. Under **Groups**, put each team in Group A, B, C… and save.
+3. Add fixtures with **Stage: Group stage** (both teams must be in the same group) or
+   **Knockout** (put the round, e.g. "Semi-final", in Round).
+4. Group matches can end level (no extra time or penalties). Knockout matches need a winner.
+5. The public page shows a table per group (the competition's points and tie-breaker rules,
+   confirmed group results only), then the knockout rounds.
 
 Re-running `pnpm db:seed` refreshes only logos and Facebook links. Names, settings, rules and
 sponsors edited in admin are kept.

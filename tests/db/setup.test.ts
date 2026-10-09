@@ -19,6 +19,7 @@ import {
   removeCompetitionSponsor,
   removeEntry,
   removePointsAdjustment,
+  setEntryGroups,
   updateCompetition,
   updateCompetitionRules,
   updateSponsorLogo,
@@ -218,5 +219,20 @@ describe("sponsors", () => {
     expect(await addCompetitionSponsor(demo, friendlies.id, { sponsorId: bakery.id }, db)).toBe("not-found");
     const demoSponsor = (await listOrgSponsors(demo, db))[0]!;
     expect(await addCompetitionSponsor(bp, friendlies.id, { sponsorId: demoSponsor.id }, db)).toBe("not-found");
+  });
+});
+
+describe("groups + knockout", () => {
+  it("creates the format and assigns groups within the organisation only", async () => {
+    const created = await createCompetition(bp, form({ name: "Winter Groups", type: "group_knockout", slug: "winter-groups-2026" }), db);
+    const id = (created as { id: string }).id;
+    await createTeamsAndEnter(bp, id, ["Passion FC", "Samba Boys FC", "Mabolela United"], "Open", db);
+    const before = (await getCompetitionForSetup(bp, id, db))!;
+    expect(before.competition.type).toBe("group_knockout");
+    const [a, b] = before.entries;
+    expect(await setEntryGroups(bp, id, [{ entryId: a!.entryId, groupLabel: "A" }, { entryId: b!.entryId, groupLabel: "B" }], db)).toBe(true);
+    expect(await setEntryGroups(demo, id, [{ entryId: a!.entryId, groupLabel: "C" }], db)).toBe(false);
+    const after = (await getCompetitionForSetup(bp, id, db))!;
+    expect(after.entries.map((e) => e.groupLabel)).toEqual(["A", "B", null]);
   });
 });

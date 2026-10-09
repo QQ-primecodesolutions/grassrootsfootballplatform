@@ -11,8 +11,8 @@ import { competitionRulesSchema, TIE_BREAKERS, type CompetitionRules } from "@/l
 /** Paths under /{org}/ that a competition slug must not shadow. */
 export const RESERVED_COMPETITION_SLUGS = new Set(["match", "team", "admin", "graphics"]);
 
-/** Types the admin can create. `group_knockout` needs group tables, which aren't built yet. */
-export const CREATABLE_TYPES = ["league", "knockout", "friendly"] as const;
+/** Types the admin can create. */
+export const CREATABLE_TYPES = ["league", "knockout", "group_knockout", "friendly"] as const;
 
 export const COMPETITION_TYPE_LABELS = {
   league: "League",
@@ -75,7 +75,7 @@ const settingsFields = {
 
 export const competitionCreateSchema = z.object({
   ...settingsFields,
-  type: z.enum(CREATABLE_TYPES, { error: "Choose league, knockout or friendlies" }),
+  type: z.enum(CREATABLE_TYPES, { error: "Choose a format" }),
   season: z.string().trim().min(2, "Enter the season, e.g. 2026").max(30),
   slug: z
     .string()
@@ -206,3 +206,15 @@ export const sponsorAddSchema = z
   });
 
 export const sponsorLogoSchema = z.object({ sponsorId: z.uuid(), logoUrl });
+
+/** The Groups form: one select per team, named "group:{entryId}", value "A"–"H" or "" for none. */
+export function parseGroupForm(form: Iterable<[string, FormDataEntryValue]>): { entryId: string; groupLabel: string | null }[] {
+  const out: { entryId: string; groupLabel: string | null }[] = [];
+  for (const [key, value] of form) {
+    const m = /^group:([0-9a-f-]{36})$/i.exec(key);
+    if (!m || typeof value !== "string") continue;
+    const label = value.trim().toUpperCase();
+    out.push({ entryId: m[1]!, groupLabel: /^[A-H]$/.test(label) ? label : null });
+  }
+  return out;
+}

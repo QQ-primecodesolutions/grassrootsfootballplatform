@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { saveResult, type SaveResultState } from "@/app/admin/(panel)/results/actions";
+import { resultRulesFor } from "@/lib/match/result-input";
 import { Stepper } from "./Stepper";
 
 type Status = "scheduled" | "postponed" | "cancelled" | "abandoned" | "completed";
@@ -10,6 +11,7 @@ type Outcome = "normal" | "walkover" | "awarded";
 export type ResultFormMatch = {
   id: string;
   competitionType: "league" | "knockout" | "group_knockout" | "friendly";
+  stage: "group" | "knockout" | null;
   homeName: string;
   awayName: string;
   status: Status;
@@ -80,9 +82,10 @@ const initialState: SaveResultState = { ok: false, message: null, errors: {} };
  */
 export function ResultForm({ match, canPublish = true }: { match: ResultFormMatch; canPublish?: boolean }) {
   const [state, formAction, pending] = useActionState(saveResult, initialState);
-  const extrasAllowed = match.competitionType !== "league";
-  // Friendlies may end level: a shootout is optional there, but required in knockouts.
-  const friendly = match.competitionType === "friendly";
+  const rules = resultRulesFor(match.competitionType, match.stage);
+  const extrasAllowed = rules.extrasAllowed;
+  // Where a draw is allowed (friendlies), a shootout is optional; in knockouts it's required.
+  const friendly = !rules.winnerRequired;
 
   const [status, setStatus] = useState<Status>(!canPublish || match.status === "scheduled" ? "completed" : match.status);
   const [outcome, setOutcome] = useState<Outcome>(match.outcomeType);

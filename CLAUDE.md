@@ -136,8 +136,11 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 - New organisations start `listed = false`: reachable by link, hidden from "/" until listed.
 - Competition setup (`/admin/competitions`) is owned by admins. The seed only refreshes logos and
   social links on re-run, so admin edits survive. `rules.confirmed` (default false) drives the
-  "rules not yet confirmed" reminders. Admins can create `league` and `knockout` only;
-  `group_knockout` needs group tables first.
+  "rules not yet confirmed" reminders. Admins can create every type.
+- `group_knockout`: teams get `competition_entries.group_label` (A–H); matches get `stage`
+  (group/knockout). Group tables come from `groupTables` (`lib/public/groups.ts`), which runs
+  the standings engine per group on confirmed group-stage matches. `resultRulesFor(type, stage)`
+  in `lib/match/result-input.ts` decides extra time, penalties and whether a winner is needed.
 - `friendly` competitions: no table and no forced winner (level is fine). Extra time and
   penalties are optional (`lib/match/result-input.ts`). Knockouts still require a winner.
 - Sponsors: `sponsors` belong to the organisation, and `competition_sponsors` (ordered, max 5)

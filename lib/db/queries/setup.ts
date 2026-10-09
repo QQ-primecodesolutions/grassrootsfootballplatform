@@ -198,7 +198,14 @@ export async function deleteCompetition(
 // One competition: settings, entries, adjustments
 // ---------------------------------------------------------------------------
 
-export type SetupEntry = { entryId: string; teamId: string; name: string; category: string; matchCount: number };
+export type SetupEntry = {
+  entryId: string;
+  teamId: string;
+  name: string;
+  category: string;
+  matchCount: number;
+  groupLabel: string | null;
+};
 export type SetupAdjustment = { id: string; entryId: string; teamName: string; points: number; reason: string; effectiveOn: string };
 
 export async function getCompetitionForSetup(scope: OrgScope, competitionId: string, db: Db = getDb()) {
@@ -231,6 +238,7 @@ export async function getCompetitionForSetup(scope: OrgScope, competitionId: str
       teamId: teams.id,
       name: teams.name,
       category: teams.category,
+      groupLabel: competitionEntries.groupLabel,
       matchCount: sql<number>`(select count(*)::int from matches m where m.home_entry_id = "competition_entries"."id" or m.away_entry_id = "competition_entries"."id")`,
     })
     .from(competitionEntries)
@@ -541,4 +549,29 @@ export async function updateSponsorLogo(scope: OrgScope, sponsorId: string, logo
     .where(and(eq(sponsors.organisationId, scope.id), eq(sponsors.id, sponsorId)))
     .returning({ id: sponsors.id });
   return rows.length > 0;
+}
+
+/** Groups + knockout: put teams in groups ("A", "B", …; null = no group). Other entries are untouched. */
+export async function setEntryGroups(
+  scope: OrgScope,
+  competitionId: string,
+  groups: { entryId: string; groupLabel: string | null }[],
+  db: Db = getDb(),
+): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    if (!(await competitionInOrg(scope, competitionId, tx))) return false;
+    for (const g of groups) {
+      await tx
+        .update(competitionEntries)
+        .set({ groupLabel: g.groupLabel })
+        .where(
+          and(
+            eq(competitionEntries.organisationId, scope.id),
+            eq(competitionEntries.competitionId, competitionId),
+            eq(competitionEntries.id, g.entryId),
+          ),
+        );
+    }
+    return true;
+  });
 }

@@ -98,6 +98,7 @@ export async function getCompetitionData(scope: OrgScope, slug: string): Promise
       shortName: teams.shortName,
       slug: teams.slug,
       logoUrl: teams.logoUrl,
+      groupLabel: competitionEntries.groupLabel,
     })
     .from(competitionEntries)
     .innerJoin(teams, eq(teams.id, competitionEntries.teamId))
@@ -110,6 +111,7 @@ export async function getCompetitionData(scope: OrgScope, slug: string): Promise
     shortName: e.shortName,
     slug: e.slug,
     logoUrl: e.logoUrl,
+    groupLabel: e.groupLabel,
   }));
   const byEntry = new Map(entries.map((e) => [e.entryId, e]));
 
@@ -138,6 +140,7 @@ export async function getCompetitionData(scope: OrgScope, slug: string): Promise
       competition: competitionRef,
       roundLabel: m.roundLabel,
       roundNumber: m.roundNumber,
+      stage: m.stage,
       kickoffAt: m.kickoffAt,
       kickoffTimeTbc: m.kickoffTimeTbc,
       status: m.status,

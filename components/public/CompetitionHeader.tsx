@@ -17,7 +17,7 @@ export function CompetitionHeader({
 }) {
   const base = `/${orgSlug}/${competition.slug}`;
   const tabs: { key: CompetitionTab; label: string; href: string }[] = [
-    { key: "table", label: competition.type === "league" ? "Table" : "Matches", href: base },
+    { key: "table", label: competition.type === "league" ? "Table" : competition.type === "group_knockout" ? "Groups" : "Matches", href: base },
     { key: "fixtures", label: "Fixtures", href: `${base}/fixtures` },
     { key: "results", label: "Results", href: `${base}/results` },
   ];

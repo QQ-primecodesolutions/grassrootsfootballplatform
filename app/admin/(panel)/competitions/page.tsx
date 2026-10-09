@@ -59,7 +59,7 @@ async function Competitions({ searchParams }: Pick<PageProps<"/admin/competition
                 <span className="block text-sm text-gray-600">
                   {COMPETITION_TYPE_LABELS[c.type]} · {c.seasonName} · {c.entryCount} team{c.entryCount === 1 ? "" : "s"} ·{" "}
                   {c.matchCount} match{c.matchCount === 1 ? "" : "es"}
-                  {c.type === "league" && !c.rulesConfirmed ? (
+                  {(c.type === "league" || c.type === "group_knockout") && !c.rulesConfirmed ? (
                     <span className="font-semibold text-amber-800"> · rules not confirmed</span>
                   ) : null}
                 </span>

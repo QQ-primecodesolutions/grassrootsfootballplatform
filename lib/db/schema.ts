@@ -42,6 +42,8 @@ export const matchStatus = pgEnum("match_status", [
 export const outcomeType = pgEnum("outcome_type", ["normal", "walkover", "awarded"]);
 export const resultState = pgEnum("result_state", ["provisional", "confirmed"]);
 export const teamGender = pgEnum("team_gender", ["male", "female", "mixed"]);
+/** Groups + knockout competitions only: group matches count towards a group table. */
+export const matchStage = pgEnum("match_stage", ["group", "knockout"]);
 /** org_admin: everything in the organisation. scorer: enters scores only; an org admin publishes. */
 export const memberRole = pgEnum("member_role", ["org_admin", "scorer"]);
 export const authTokenPurpose = pgEnum("auth_token_purpose", ["invite", "reset"]);
@@ -305,6 +307,8 @@ export const matches = pgTable(
     competitionId: uuid("competition_id").notNull(),
     roundLabel: text("round_label"),
     roundNumber: integer("round_number"),
+    /** Set for group_knockout competitions only (null elsewhere). */
+    stage: matchStage("stage"),
     homeEntryId: uuid("home_entry_id").notNull(),
     awayEntryId: uuid("away_entry_id").notNull(),
     venueId: uuid("venue_id"),

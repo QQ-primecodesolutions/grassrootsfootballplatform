@@ -14,6 +14,8 @@ export type PublicTeamRef = {
   shortName: string;
   slug: string;
   logoUrl: string | null;
+  /** Groups + knockout competitions: the team's group ("A", "B", …). */
+  groupLabel?: string | null;
 };
 
 export type ScorePair = { home: number; away: number };
@@ -40,6 +42,8 @@ export type PublicMatch = {
   };
   roundLabel: string | null;
   roundNumber: number | null;
+  /** Groups + knockout competitions only. */
+  stage?: "group" | "knockout" | null;
   kickoffAt: Date | null;
   kickoffTimeTbc: boolean;
   status: MatchStatus;

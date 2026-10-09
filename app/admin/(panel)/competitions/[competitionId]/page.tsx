@@ -8,6 +8,7 @@ import {
   AddSponsorForm,
   AdjustmentForm,
   CompetitionForm,
+  GroupsForm,
   RulesForm,
   SponsorLogoForm,
 } from "@/components/admin/CompetitionForms";
@@ -59,6 +60,9 @@ async function CompetitionSetup({
   const entered = new Set(entries.map((e) => e.teamId));
   const available = allTeams.filter((t) => !entered.has(t.id)).map((t) => ({ id: t.id, name: t.name, category: t.category }));
   const isLeague = c.type === "league";
+  const isGroups = c.type === "group_knockout";
+  // Group tables use the same points and tie-breaker rules as a league.
+  const hasTables = isLeague || isGroups;
   const shown = await listCompetitionSponsors(scope, c.id);
   const shownIds = new Set(shown.map((s) => s.sponsorId));
   const availableSponsors = orgSponsors.filter((s) => !shownIds.has(s.id));
@@ -144,7 +148,21 @@ async function CompetitionSetup({
         <p className="mt-3 text-xs text-gray-600">A team can only be removed before it has matches in this competition.</p>
       </section>
 
-      {isLeague ? (
+      {isGroups && entries.length ? (
+        <section className={sectionClass} aria-labelledby="groups-heading">
+          <h2 id="groups-heading" className={h2Class}>
+            Groups
+          </h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Put each team in its group. Fixtures marked “Group stage” must be between teams of the same group.
+          </p>
+          <div className="mt-2">
+            <GroupsForm competitionId={c.id} entries={entries} />
+          </div>
+        </section>
+      ) : null}
+
+      {hasTables ? (
         <section className={sectionClass} aria-labelledby="rules-heading">
           <h2 id="rules-heading" className={h2Class}>
             Rules

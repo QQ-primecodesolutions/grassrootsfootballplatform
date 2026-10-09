@@ -7,6 +7,7 @@ import { MatchList, MatchRow } from "@/components/public/MatchList";
 import { Section } from "@/components/public/Section";
 import { StandingsTable } from "@/components/public/StandingsTable";
 import { competitionMetadata, requireCompetition } from "@/lib/public/competition";
+import { groupTables, knockoutMatches } from "@/lib/public/groups";
 import { groupByRound, standingsFor } from "@/lib/public/views";
 
 export async function generateMetadata({ params }: PageProps<"/[org]/[competition]">): Promise<Metadata> {
@@ -19,6 +20,35 @@ async function CompetitionTablePageContent({ params }: Pick<PageProps<"/[org]/[c
   const { org: orgSlug, competition: slug } = await params;
   const { org, data } = await requireCompetition(orgSlug, slug);
   const c = data.competition;
+
+  if (c.type === "group_knockout") {
+    const groups = groupTables(data);
+    const rounds = groupByRound(knockoutMatches(data.matches));
+    return (
+      <>
+        <CompetitionHeader orgSlug={org.slug} competition={c} active="table" />
+        {groups.length ? (
+          groups.map((g) => (
+            <Section key={g.label} title={`Group ${g.label}`}>
+              <StandingsTable orgSlug={org.slug} rows={g.rows} variant="compact" caption={`${c.name} Group ${g.label}`} />
+            </Section>
+          ))
+        ) : (
+          <EmptyState title="Groups not drawn yet" />
+        )}
+        {rounds.map((r) => (
+          <Section key={r.label} title={r.label === "Matches" ? "Knockout" : r.label}>
+            <MatchList>
+              {r.matches.map((m) => (
+                <MatchRow key={m.id} orgSlug={org.slug} match={m} showDate showRound={false} />
+              ))}
+            </MatchList>
+          </Section>
+        ))}
+        <p className="mt-2 text-xs text-muted">Group tables count confirmed group-stage results only.</p>
+      </>
+    );
+  }
 
   if (c.type !== "league") {
     // Knockout: no table; list every match by round.
