@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { clientIp, LOCKOUT, lockoutMessage, lockoutState } from "@/lib/auth/lockout";
+import { orgRoleOf, scorerSaveProblem } from "@/lib/auth/roles";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { passwordProblem } from "@/lib/auth/password-rules";
 import { hashLinkToken, isLinkTokenShape, newLinkToken } from "@/lib/auth/tokens";
@@ -120,7 +121,33 @@ describe("organisation form", () => {
     expect(inviteSchema.parse({ name: " Lerato ", email: " Lerato@Club.CO.ZA " })).toEqual({
       name: "Lerato",
       email: "lerato@club.co.za",
+      role: "org_admin",
     });
+    expect(inviteSchema.parse({ name: "Thabo", email: "t@club.co.za", role: "scorer" }).role).toBe("scorer");
+    expect(inviteSchema.safeParse({ name: "Thabo", email: "t@club.co.za", role: "owner" }).success).toBe(false);
     expect(inviteSchema.safeParse({ name: "Lerato", email: "not-an-email" }).success).toBe(false);
+  });
+});
+
+describe("scorer rules", () => {
+  const played = { status: "completed", resultState: "provisional" as const };
+
+  it("lets a scorer save a played match's score as provisional only", () => {
+    expect(scorerSaveProblem({ intent: "provisional", status: "completed" }, { status: "scheduled", resultState: "provisional" })).toBeNull();
+    expect(scorerSaveProblem({ intent: "provisional", status: "completed" }, played)).toBeNull();
+    expect(scorerSaveProblem({ intent: "confirm", status: "completed" }, played)).toMatch(/Only an organisation admin can publish/);
+    expect(scorerSaveProblem({ intent: "provisional", status: "postponed" }, played)).toMatch(/played match/);
+  });
+
+  it("never lets a scorer change a published result", () => {
+    expect(
+      scorerSaveProblem({ intent: "provisional", status: "completed" }, { status: "completed", resultState: "confirmed" }),
+    ).toMatch(/already published/);
+  });
+
+  it("treats super admins and org admins as admins", () => {
+    expect(orgRoleOf(true, "scorer")).toBe("admin");
+    expect(orgRoleOf(false, "org_admin")).toBe("admin");
+    expect(orgRoleOf(false, "scorer")).toBe("scorer");
   });
 });

@@ -12,7 +12,16 @@ function adminScore(m: AdminMatch): string | null {
   return h === null || a === null ? null : `${h}–${a}`;
 }
 
-export function AdminMatchRow({ match: m, showDate = true }: { match: AdminMatch; showDate?: boolean }) {
+export function AdminMatchRow({
+  match: m,
+  showDate = true,
+  note = null,
+}: {
+  match: AdminMatch;
+  showDate?: boolean;
+  /** An extra line, e.g. "Entered by Thabo". */
+  note?: string | null;
+}) {
   const score = adminScore(m);
   const state = displayState(m);
   return (
@@ -24,6 +33,7 @@ export function AdminMatchRow({ match: m, showDate = true }: { match: AdminMatch
           </p>
           <p className="truncate font-semibold">{m.home.name}</p>
           <p className="truncate font-semibold">{m.away.name}</p>
+          {note ? <p className="truncate text-xs font-semibold text-amber-800">{note}</p> : null}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           {score ? (

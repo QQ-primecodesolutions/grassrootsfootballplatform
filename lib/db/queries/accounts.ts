@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import { getDb, type Db } from "@/lib/db/client";
 import { authTokens, loginFailures, memberships, organisations, users } from "@/lib/db/schema";
 import { windowStart, LOCKOUT } from "@/lib/auth/lockout";
+import { orgRoleOf, type OrgRole } from "@/lib/auth/roles";
 import { hashLinkToken, isLinkTokenShape, type LinkPurpose } from "@/lib/auth/tokens";
 import { normaliseEmail } from "@/lib/platform/organisation-input";
 import { unsafeOrgScope, type OrgScope } from "./organisations";
@@ -14,7 +15,8 @@ import { unsafeOrgScope, type OrgScope } from "./organisations";
  */
 
 export type SessionUser = { id: string; email: string; name: string; isSuperAdmin: boolean; sessionVersion: number };
-export type AdminOrg = { id: string; slug: string; name: string; hashtags: string[] };
+/** An organisation the user can work in, and their role there (a super admin is always "admin"). */
+export type AdminOrg = { id: string; slug: string; name: string; hashtags: string[]; role: OrgRole };
 
 const sessionUserColumns = {
   id: users.id,
@@ -36,14 +38,26 @@ export async function getSessionUser(userId: string, sessionVersion: number, db:
 
 const orgColumns = { id: organisations.id, slug: organisations.slug, name: organisations.name, hashtags: organisations.hashtags };
 
-export async function listAccessibleOrgs(user: Pick<SessionUser, "id" | "isSuperAdmin">, db: Db = getDb()): Promise<AdminOrg[]> {
-  if (user.isSuperAdmin) return db.select(orgColumns).from(organisations).orderBy(asc(organisations.name));
-  return db
-    .select(orgColumns)
+async function orgsFor(user: Pick<SessionUser, "id" | "isSuperAdmin">, orgId: string | null, db: Db): Promise<AdminOrg[]> {
+  if (user.isSuperAdmin) {
+    const rows = await db
+      .select(orgColumns)
+      .from(organisations)
+      .where(orgId ? eq(organisations.id, orgId) : undefined)
+      .orderBy(asc(organisations.name));
+    return rows.map((o) => ({ ...o, role: "admin" as const }));
+  }
+  const rows = await db
+    .select({ ...orgColumns, memberRole: memberships.role })
     .from(memberships)
     .innerJoin(organisations, eq(organisations.id, memberships.organisationId))
-    .where(eq(memberships.userId, user.id))
+    .where(and(eq(memberships.userId, user.id), orgId ? eq(memberships.organisationId, orgId) : undefined))
     .orderBy(asc(organisations.name));
+  return rows.map(({ memberRole, ...o }) => ({ ...o, role: orgRoleOf(false, memberRole) }));
+}
+
+export async function listAccessibleOrgs(user: Pick<SessionUser, "id" | "isSuperAdmin">, db: Db = getDb()): Promise<AdminOrg[]> {
+  return orgsFor(user, null, db);
 }
 
 /** The org scope for `orgId` if this user may work in it, otherwise null. */
@@ -53,15 +67,7 @@ export async function accessibleOrg(
   db: Db = getDb(),
 ): Promise<{ scope: OrgScope; org: AdminOrg } | null> {
   if (!/^[0-9a-f-]{36}$/i.test(orgId)) return null;
-  const rows = user.isSuperAdmin
-    ? await db.select(orgColumns).from(organisations).where(eq(organisations.id, orgId)).limit(1)
-    : await db
-        .select(orgColumns)
-        .from(memberships)
-        .innerJoin(organisations, eq(organisations.id, memberships.organisationId))
-        .where(and(eq(memberships.userId, user.id), eq(memberships.organisationId, orgId)))
-        .limit(1);
-  const org = rows[0];
+  const [org] = await orgsFor(user, orgId, db);
   return org ? { scope: unsafeOrgScope(org.id, org.slug), org } : null;
 }
 

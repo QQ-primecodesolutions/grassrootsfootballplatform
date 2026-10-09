@@ -24,6 +24,8 @@ async function AdminHome() {
   const today = todaySast();
   const groups = groupAdminMatches(matches, today);
   const matchDays = upcomingMatchDays(matches, today, 4);
+  // Played matches with a saved (e.g. by a scorer) but unpublished score, oldest first.
+  const toPublish = matches.filter((m) => m.status === "completed" && m.resultState === "provisional");
 
   return (
     <>
@@ -33,6 +35,20 @@ async function AdminHome() {
           View public site
         </Link>
       </p>
+
+      {toPublish.length ? (
+        <section className="mt-4 rounded-lg bg-amber-50 p-3 ring-1 ring-amber-300">
+          <h2 className="font-display text-lg font-bold uppercase text-amber-950">Waiting for you to publish ({toPublish.length})</h2>
+          <p className="text-sm text-amber-900">Scores saved but not public yet. Check each one, then confirm &amp; publish.</p>
+          <div className="mt-2">
+            <AdminList>
+              {toPublish.map((m) => (
+                <AdminMatchRow key={m.id} match={m} note={m.enteredByName ? `Entered by ${m.enteredByName}` : null} />
+              ))}
+            </AdminList>
+          </div>
+        </section>
+      ) : null}
 
       {competitions.length === 0 ? (
         <section className="mt-4 rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5">

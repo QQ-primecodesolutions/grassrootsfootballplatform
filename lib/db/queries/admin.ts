@@ -9,6 +9,7 @@ import {
   seasons,
   teamAliases,
   teams,
+  users,
   venues,
 } from "@/lib/db/schema";
 import { normalizeTeamName, slugify } from "@/lib/fixtures-paste/normalize";
@@ -163,6 +164,8 @@ export type AdminMatch = {
   winnerEntryId: string | null;
   notes: string | null;
   confirmedAt: Date | null;
+  /** Who last saved the result, if anyone. */
+  enteredByName: string | null;
 };
 
 function adminMatchQuery(db: Db) {
@@ -174,10 +177,12 @@ function adminMatchQuery(db: Db) {
       competitionType: competitions.type,
       streamLabel: competitions.streamLabel,
       venueName: venues.name,
+      enteredByName: users.name,
     })
     .from(matches)
     .innerJoin(competitions, eq(competitions.id, matches.competitionId))
-    .leftJoin(venues, eq(venues.id, matches.venueId));
+    .leftJoin(venues, eq(venues.id, matches.venueId))
+    .leftJoin(users, eq(users.id, matches.resultEnteredBy));
 }
 
 async function teamNamesByEntry(scope: OrgScope, db: Db) {
@@ -223,6 +228,7 @@ function toAdminMatch(
     winnerEntryId: m.winnerEntryId,
     notes: m.notes,
     confirmedAt: m.confirmedAt,
+    enteredByName: row.enteredByName,
   };
 }
 
@@ -264,6 +270,8 @@ export type MatchResultPatch = {
   winnerEntryId: string | null;
   confirmedAt: Date | null;
   notes: string | null;
+  /** The user saving it (shown to admins as "entered by"). */
+  resultEnteredBy?: string | null;
 };
 
 /** Update a match's result within the organisation. Returns null if the match isn't in this org. */

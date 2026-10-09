@@ -23,11 +23,13 @@ import {
   issuePasswordLink,
   listOrganisationsForPlatform,
   removeOrgAdmin,
+  setMemberRole,
   setOrganisationListed,
   unsafePlatformScope,
   updateOrganisation,
 } from "@/lib/db/queries/platform";
-import { authTokens, organisations, users } from "@/lib/db/schema";
+import { getAdminMatch, saveMatchResult } from "@/lib/db/queries/admin";
+import { authTokens, matches, organisations, users } from "@/lib/db/schema";
 import { organisationCreateSchema } from "@/lib/platform/organisation-input";
 import { seedAll } from "@/scripts/seed/index";
 import { createTestDb } from "../helpers/pglite";
@@ -204,5 +206,49 @@ describe("login failures", () => {
     await clearLoginFailures("41.0.0.1", db);
     expect((await recentLoginFailures("41.0.0.1", at, db)).ipFailures).toHaveLength(0);
     expect((await recentLoginFailures("41.0.0.2", at, db)).ipFailures).toHaveLength(1);
+  });
+});
+
+describe("scorers", () => {
+  it("get the scorer role in their organisation, can be promoted, and saves record who entered", async () => {
+    const { platform } = await superAdmin();
+    const invite = await inviteOrgAdmin(platform, bpId, { name: "Scorer Sam", email: "sam@example.com", role: "scorer" }, now, db);
+    const sam = await redeemLinkToken((invite as { token: string }).token, await hashPassword("goal line camera"), now, db);
+    const who = { id: sam!.id, isSuperAdmin: false };
+    expect((await resolveAdminOrg(who, bpId, db))?.org.role).toBe("scorer");
+    const data = await getOrganisationForPlatform(platform, bpId, db);
+    expect(data?.members.find((m) => m.userId === sam!.id)).toMatchObject({ role: "scorer", status: "active" });
+
+    const [match] = await db.select().from(matches).where(eq(matches.organisationId, bpId)).limit(1);
+    const scope = (await resolveAdminOrg(who, bpId, db))!.scope;
+    await saveMatchResult(
+      scope,
+      match!.id,
+      {
+        status: "completed",
+        outcomeType: "normal",
+        resultState: "provisional",
+        homeGoals: 1,
+        awayGoals: 0,
+        htHomeGoals: null,
+        htAwayGoals: null,
+        aetHomeGoals: null,
+        aetAwayGoals: null,
+        penHome: null,
+        penAway: null,
+        winnerEntryId: match!.homeEntryId,
+        confirmedAt: null,
+        notes: null,
+        resultEnteredBy: sam!.id,
+      },
+      db,
+    );
+    expect((await getAdminMatch(scope, match!.id, db))?.enteredByName).toBe("Scorer Sam");
+
+    expect(await setMemberRole(platform, bpId, sam!.id, "org_admin", db)).toBe(true);
+    expect((await resolveAdminOrg(who, bpId, db))?.org.role).toBe("admin");
+    // Inviting an existing member again sets the role given.
+    await inviteOrgAdmin(platform, bpId, { name: "Scorer Sam", email: "sam@example.com", role: "scorer" }, now, db);
+    expect((await resolveAdminOrg(who, bpId, db))?.org.role).toBe("scorer");
   });
 });

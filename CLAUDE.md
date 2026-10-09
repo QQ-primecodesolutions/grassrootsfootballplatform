@@ -124,8 +124,11 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
   including provisional scores. Each function takes an `OrgScope` and an optional `db` for PGlite tests.
 - Every Server Action starts with `getCurrentAdmin()`, validates its input with zod, and calls
   `updateTag(...)` for each affected tag (see `tagsForMatchChange`), then `refresh()`.
-- Accounts: personal email + password logins; roles are super admin (`users.is_super_admin`) and
-  org admin (`memberships`). Invites and resets are one-time links (only a SHA-256 is stored) that
+- Accounts: personal email + password logins; roles are super admin (`users.is_super_admin`),
+  org admin and scorer (`memberships.role`). `getCurrentAdmin()` is admin-only by default (a
+  scorer is redirected to Results); only the result screens and `saveResult` pass
+  `{ allowScorer: true }`, and `scorerSaveProblem` (`lib/auth/roles.ts`) limits a scorer to a
+  provisional score for a played, unpublished match. `matches.result_entered_by` records who saved. Invites and resets are one-time links (only a SHA-256 is stored) that
   the super admin sends on WhatsApp; there's no email service. Bumping `users.session_version`
   signs a user out everywhere (password change, link use, removal).
 - Login lockout (`lib/auth/lockout.ts`): failures are counted per IP in `login_failures`

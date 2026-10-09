@@ -103,6 +103,7 @@ export const inviteSchema = z.object({
     .toLowerCase()
     .max(200)
     .pipe(z.email("Enter a valid email address")),
+  role: z.enum(["org_admin", "scorer"]).default("org_admin"),
 });
 
 export function normaliseEmail(email: string): string {

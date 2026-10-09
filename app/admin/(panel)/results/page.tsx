@@ -18,7 +18,7 @@ export default function AdminResultsPage() {
 }
 
 async function ResultsList() {
-  const { scope } = await getCurrentAdmin();
+  const { scope, role } = await getCurrentAdmin({ allowScorer: true });
   const groups = groupAdminMatches(await listAdminMatches(scope), todaySast());
   const sections = [
     { title: "Today", items: groups.today, showDate: false, empty: "No matches today." },
@@ -30,7 +30,11 @@ async function ResultsList() {
   return (
     <>
       <h1 className="font-display text-2xl font-bold uppercase tracking-wide">Results</h1>
-      <p className="text-sm text-gray-600">Tap a match to enter or confirm its result.</p>
+      <p className="text-sm text-gray-600">
+        {role === "scorer"
+          ? "Tap a match to enter its score. An organisation admin publishes it."
+          : "Tap a match to enter or confirm its result."}
+      </p>
       {sections.map((s) => (
         <section key={s.title} className="mt-5">
           <h2 className="mb-2 font-display text-lg font-bold uppercase">{s.title}</h2>

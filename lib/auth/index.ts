@@ -5,6 +5,7 @@ import { getSessionUser, resolveAdminOrg, type AdminOrg, type SessionUser } from
 import { unsafePlatformScope, type PlatformScope } from "@/lib/db/queries/platform";
 import type { OrgScope } from "@/lib/db/queries";
 import { getAuthEnv } from "@/lib/env";
+import type { OrgRole } from "./roles";
 import { SESSION_COOKIE, sessionCookieOptions, signSession, verifySession } from "./session";
 
 export type CurrentUser = { user: SessionUser; orgId: string | null };
@@ -13,6 +14,8 @@ export type CurrentAdmin = {
   user: SessionUser;
   scope: OrgScope;
   org: AdminOrg;
+  /** The user's role in this organisation. */
+  role: OrgRole;
 };
 
 /**
@@ -33,12 +36,17 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
  * working in. Call it in every admin page AND every Server Action; proxy.ts is only an
  * early redirect, not the security boundary. A super admin without an organisation is
  * sent to the platform page.
+ *
+ * Admin-only by default: a scorer is sent to Results. Only the result screens and the result
+ * action pass `{ allowScorer: true }` (and then check `role` for what a scorer may do).
  */
-export async function getCurrentAdmin(): Promise<CurrentAdmin> {
+export async function getCurrentAdmin(options: { allowScorer?: boolean } = {}): Promise<CurrentAdmin> {
   const { user, orgId } = await getCurrentUser();
   const resolved = await resolveAdminOrg(user, orgId);
   if (!resolved) redirect(user.isSuperAdmin ? "/admin/platform" : "/admin/login");
-  return { user, ...resolved };
+  const role = resolved.org.role;
+  if (role !== "admin" && !options.allowScorer) redirect("/admin/results");
+  return { user, ...resolved, role };
 }
 
 /** For platform pages and actions: only super admins get a PlatformScope. */

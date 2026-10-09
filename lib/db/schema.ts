@@ -42,7 +42,8 @@ export const matchStatus = pgEnum("match_status", [
 export const outcomeType = pgEnum("outcome_type", ["normal", "walkover", "awarded"]);
 export const resultState = pgEnum("result_state", ["provisional", "confirmed"]);
 export const teamGender = pgEnum("team_gender", ["male", "female", "mixed"]);
-export const memberRole = pgEnum("member_role", ["org_admin"]);
+/** org_admin: everything in the organisation. scorer: enters scores only; an org admin publishes. */
+export const memberRole = pgEnum("member_role", ["org_admin", "scorer"]);
 export const authTokenPurpose = pgEnum("auth_token_purpose", ["invite", "reset"]);
 
 // ---------------------------------------------------------------------------
@@ -332,6 +333,8 @@ export const matches = pgTable(
     resultState: resultState("result_state").notNull().default("provisional"),
     notes: text("notes"),
     confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    /** Who last saved the result (e.g. a scorer at the ground), so the admin knows who to ask. */
+    resultEnteredBy: uuid("result_entered_by").references(() => users.id, { onDelete: "set null" }),
     ...timestamps,
   },
   (t) => [

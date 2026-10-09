@@ -43,6 +43,13 @@
       "when": 1791522793218,
       "tag": "0005_media",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791523661535,
+      "tag": "0006_scorer_role",
+      "breakpoints": true
     }
   ]
 }

@@ -8,7 +8,8 @@ import { PageSkeleton } from "@/components/public/PageSkeleton";
 import { getCurrentSuperAdmin } from "@/lib/auth";
 import { getOrganisationForPlatform } from "@/lib/db/queries/platform";
 import { formatShortDate } from "@/lib/time";
-import { removeAdminAction, setListedAction, workInOrganisationAction } from "../actions";
+import { ROLE_LABELS } from "@/lib/auth/roles";
+import { removeAdminAction, setListedAction, setRoleAction, workInOrganisationAction } from "../actions";
 
 export const metadata: Metadata = { title: "Organisation" };
 
@@ -67,7 +68,7 @@ async function PlatformOrganisation({
       </div>
 
       <section className="rounded-lg bg-white p-3 shadow-sm ring-1 ring-black/5">
-        <h2 className="font-display text-lg font-bold uppercase">Admins</h2>
+        <h2 className="font-display text-lg font-bold uppercase">People</h2>
         {members.length ? (
           <ul className="mt-2 divide-y divide-black/5">
             {members.map((m) => (
@@ -79,12 +80,21 @@ async function PlatformOrganisation({
                       <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">Invited</span>
                     ) : null}
                   </p>
+                  <p className="text-sm font-semibold text-gray-700">{ROLE_LABELS[m.role]}</p>
                   <p className="break-all text-sm text-gray-600">
                     {m.email}
                     {m.lastLoginAt ? ` · last sign-in ${formatShortDate(m.lastLoginAt)}` : ""}
                   </p>
                 </div>
                 <MemberLinkButton orgId={org.id} orgName={org.name} userId={m.userId} name={m.name} active={m.status === "active"} />
+                <form action={setRoleAction}>
+                  <input type="hidden" name="orgId" value={org.id} />
+                  <input type="hidden" name="userId" value={m.userId} />
+                  <input type="hidden" name="role" value={m.role === "scorer" ? "org_admin" : "scorer"} />
+                  <button type="submit" className="text-sm font-semibold text-gray-700 underline">
+                    {m.role === "scorer" ? "Make organisation admin" : "Make scorer"}
+                  </button>
+                </form>
                 <details>
                   <summary className="cursor-pointer text-sm font-semibold text-red-800">Remove from {org.name}</summary>
                   <form action={removeAdminAction} className="mt-2">
@@ -100,9 +110,9 @@ async function PlatformOrganisation({
             ))}
           </ul>
         ) : (
-          <p className="mt-1 text-sm text-gray-600">No admins yet.</p>
+          <p className="mt-1 text-sm text-gray-600">No one yet.</p>
         )}
-        <h3 className="mt-4 mb-2 font-semibold">Add an admin</h3>
+        <h3 className="mt-4 mb-2 font-semibold">Add a person</h3>
         <InviteForm orgId={org.id} orgName={org.name} />
       </section>
 

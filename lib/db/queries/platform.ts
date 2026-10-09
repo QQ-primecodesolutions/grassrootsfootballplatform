@@ -50,6 +50,7 @@ export type OrgMember = {
   email: string;
   /** "invited" until they use their link and choose a password. */
   status: "active" | "invited";
+  role: "org_admin" | "scorer";
   isSuperAdmin: boolean;
   lastLoginAt: Date | null;
 };
@@ -66,6 +67,7 @@ export async function getOrganisationForPlatform(_p: PlatformScope, orgId: strin
       passwordHash: users.passwordHash,
       isSuperAdmin: users.isSuperAdmin,
       lastLoginAt: users.lastLoginAt,
+      role: memberships.role,
     })
     .from(memberships)
     .innerJoin(users, eq(users.id, memberships.userId))
@@ -172,10 +174,11 @@ export type InviteResult =
 export async function inviteOrgAdmin(
   p: PlatformScope,
   orgId: string,
-  input: { name: string; email: string },
+  input: { name: string; email: string; role?: "org_admin" | "scorer" },
   now: Date,
   db: Db = getDb(),
 ): Promise<InviteResult | null> {
+  const role = input.role ?? "org_admin";
   const email = normaliseEmail(input.email);
   const result = await db.transaction(async (tx) => {
     const [org] = await tx.select({ id: organisations.id }).from(organisations).where(eq(organisations.id, orgId)).limit(1);
@@ -186,7 +189,11 @@ export async function inviteOrgAdmin(
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
-    await tx.insert(memberships).values({ userId: user!.id, organisationId: orgId }).onConflictDoNothing();
+    // Inviting someone who is already a member updates their role.
+    await tx
+      .insert(memberships)
+      .values({ userId: user!.id, organisationId: orgId, role })
+      .onConflictDoUpdate({ target: [memberships.userId, memberships.organisationId], set: { role } });
     return user!;
   });
   if (!result) return null;
@@ -203,6 +210,22 @@ export async function getOrgMember(_p: PlatformScope, orgId: string, userId: str
     .where(and(eq(memberships.organisationId, orgId), eq(memberships.userId, userId)))
     .limit(1);
   return row ? { userId: row.userId, active: row.passwordHash !== null } : null;
+}
+
+/** Change someone's role in an organisation (takes effect on their next page load). */
+export async function setMemberRole(
+  _p: PlatformScope,
+  orgId: string,
+  userId: string,
+  role: "org_admin" | "scorer",
+  db: Db = getDb(),
+): Promise<boolean> {
+  const rows = await db
+    .update(memberships)
+    .set({ role })
+    .where(and(eq(memberships.organisationId, orgId), eq(memberships.userId, userId)))
+    .returning({ userId: memberships.userId });
+  return rows.length > 0;
 }
 
 /** Remove someone's access to one organisation, and sign them out everywhere. */

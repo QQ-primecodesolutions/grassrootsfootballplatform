@@ -90,7 +90,7 @@ export async function logout(): Promise<void> {
 
 /** Switch the organisation the user is working in (only to one they can access). */
 export async function switchOrganisation(formData: FormData): Promise<void> {
-  const { user } = await getCurrentAdmin();
+  const { user } = await getCurrentAdmin({ allowScorer: true });
   const orgId = z.uuid().safeParse(formData.get("orgId"));
   if (!orgId.success) return;
   const target = await accessibleOrg(user, orgId.data);

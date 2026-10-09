@@ -4,13 +4,14 @@ import { refresh, updateTag } from "next/cache";
 import { getCurrentAdmin } from "@/lib/auth";
 import { tagsForMatchChange } from "@/lib/cache/tags";
 import { getAdminMatch, saveMatchResult } from "@/lib/db/queries/admin";
+import { scorerSaveProblem } from "@/lib/auth/roles";
 import { buildResultPatch, resultFormSchema, type ResultErrors } from "@/lib/match/result-input";
 
 export type SaveResultState = { ok: boolean; message: string | null; errors: ResultErrors };
 
 export async function saveResult(_prev: SaveResultState, formData: FormData): Promise<SaveResultState> {
   // Re-verify the session here: the proxy is not the security boundary.
-  const { scope } = await getCurrentAdmin();
+  const { scope, user, role } = await getCurrentAdmin({ allowScorer: true });
 
   // Empty inputs mean "not entered".
   const raw = Object.fromEntries([...formData.entries()].filter(([, v]) => v !== ""));
@@ -21,6 +22,11 @@ export async function saveResult(_prev: SaveResultState, formData: FormData): Pr
 
   const match = await getAdminMatch(scope, parsed.data.matchId);
   if (!match) return { ok: false, message: "That match wasn't found in this organisation.", errors: {} };
+
+  if (role === "scorer") {
+    const problem = scorerSaveProblem(parsed.data, match);
+    if (problem) return { ok: false, message: problem, errors: {} };
+  }
 
   const built = buildResultPatch(parsed.data, {
     competitionType: match.competitionType,
@@ -35,7 +41,7 @@ export async function saveResult(_prev: SaveResultState, formData: FormData): Pr
 
   let saved;
   try {
-    saved = await saveMatchResult(scope, match.id, { ...built.patch, confirmedAt });
+    saved = await saveMatchResult(scope, match.id, { ...built.patch, confirmedAt, resultEnteredBy: user.id });
   } catch (error) {
     console.error("saveResult failed", error);
     return { ok: false, message: "The result couldn't be saved. Please try again.", errors: {} };
@@ -58,6 +64,8 @@ export async function saveResult(_prev: SaveResultState, formData: FormData): Pr
       ? `Saved: match marked as ${built.patch.status}. This shows on the public site now.`
       : confirming
         ? "Published. The public table is updated."
-        : "Saved as provisional. It won't show on the public site until you confirm it.";
+        : role === "scorer"
+          ? "Score sent. It goes public once an organisation admin publishes it."
+          : "Saved as provisional. It won't show on the public site until you confirm it.";
   return { ok: true, message, errors: {} };
 }

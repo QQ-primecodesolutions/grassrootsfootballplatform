@@ -103,7 +103,9 @@ the rest of the document, this section wins.
   - Sponsors in setup, and fixtures-graphic rows sized to the list.
 - 2026-10-09: logo upload, approved by the owner, stored **in Postgres** (owner's choice over
   Vercel Blob: no new service, key or dependency). The browser tidies and shrinks images
-  before upload. Next: a scorer role (enter scores, but only org admins confirm).
+  before upload.
+- 2026-10-09: scorer role, approved by the owner. Scorers enter scores, which stay provisional;
+  only org admins publish. Migration 0006 adds the role and `matches.result_entered_by`.
   - New competition format `friendly` (enum value, migration 0004): no table, and draws are
     allowed. It also covers matches in other organisers' tournaments.
 

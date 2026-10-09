@@ -74,13 +74,17 @@ function Segmented<T extends string>({
 
 const initialState: SaveResultState = { ok: false, message: null, errors: {} };
 
-export function ResultForm({ match }: { match: ResultFormMatch }) {
+/**
+ * `canPublish` is false for scorers: they enter the score of a played match only, and it
+ * stays provisional until an organisation admin publishes it (enforced again on the server).
+ */
+export function ResultForm({ match, canPublish = true }: { match: ResultFormMatch; canPublish?: boolean }) {
   const [state, formAction, pending] = useActionState(saveResult, initialState);
   const extrasAllowed = match.competitionType !== "league";
   // Friendlies may end level: a shootout is optional there, but required in knockouts.
   const friendly = match.competitionType === "friendly";
 
-  const [status, setStatus] = useState<Status>(match.status === "scheduled" ? "completed" : match.status);
+  const [status, setStatus] = useState<Status>(!canPublish || match.status === "scheduled" ? "completed" : match.status);
   const [outcome, setOutcome] = useState<Outcome>(match.outcomeType);
   const [home, setHome] = useState(match.homeGoals ?? 0);
   const [away, setAway] = useState(match.awayGoals ?? 0);
@@ -158,7 +162,9 @@ export function ResultForm({ match }: { match: ResultFormMatch }) {
         <input type="hidden" name="walkoverWinner" value={walkoverWinner} />
       ) : null}
 
-      <Segmented name="Match status" value={status} options={STATUS_OPTIONS} onChange={(v) => { setStatus(v); setConfirming(false); }} />
+      {canPublish ? (
+        <Segmented name="Match status" value={status} options={STATUS_OPTIONS} onChange={(v) => { setStatus(v); setConfirming(false); }} />
+      ) : null}
 
       {played ? (
         <Segmented name="Outcome" value={outcome} options={OUTCOME_OPTIONS} onChange={(v) => { setOutcome(v); setConfirming(false); }} />
@@ -285,7 +291,17 @@ export function ResultForm({ match }: { match: ResultFormMatch }) {
       ) : null}
 
       <div className="sticky bottom-16 z-10 -mx-4 space-y-2 bg-gray-100/95 px-4 py-3 backdrop-blur">
-        {!played ? (
+        {!canPublish ? (
+          <button
+            type="submit"
+            name="intent"
+            value="provisional"
+            disabled={pending}
+            className="h-14 w-full rounded-lg bg-gray-900 text-base font-semibold text-white disabled:opacity-60"
+          >
+            {pending ? "Sending…" : "Send score for confirmation"}
+          </button>
+        ) : !played ? (
           <button
             type="submit"
             name="intent"

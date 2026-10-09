@@ -29,14 +29,16 @@ export default function ResultEntryPage({ params }: PageProps<"/admin/results/[m
 
 async function ResultEntry({ params }: Pick<PageProps<"/admin/results/[matchId]">, "params">) {
   const { matchId } = await params;
-  const { scope, org } = await getCurrentAdmin();
+  const { scope, org, role } = await getCurrentAdmin({ allowScorer: true });
+  const scorer = role === "scorer";
   const m = await getAdminMatch(scope, matchId);
   if (!m) notFound();
 
-  const share = shareForMatch(m, org, siteUrl());
+  const share = scorer ? null : shareForMatch(m, org, siteUrl());
   const graphics = share ? await graphicLinks(org.slug, m) : [];
   // Before kickoff: a "Team A vs Team B" card to announce the match.
-  const preview = !share && m.status === "scheduled" ? await matchPreviewShare(org, m, siteUrl()) : null;
+  const preview = !scorer && !share && m.status === "scheduled" ? await matchPreviewShare(org, m, siteUrl()) : null;
+  const published = m.status === "completed" && m.resultState === "confirmed";
   const formMatch: ResultFormMatch = {
     id: m.id,
     competitionType: m.competitionType,
@@ -77,7 +79,20 @@ async function ResultEntry({ params }: Pick<PageProps<"/admin/results/[matchId]"
 
       {share ? <SharePanel share={share} graphics={graphics} /> : null}
 
-      <ResultForm match={formMatch} />
+      {m.enteredByName && m.status === "completed" && m.resultState === "provisional" ? (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-amber-200">
+          Score entered by <strong>{m.enteredByName}</strong>
+          {scorer ? ". An organisation admin will publish it." : ". Check it, then confirm & publish."}
+        </p>
+      ) : null}
+
+      {scorer && published ? (
+        <p className="rounded-lg bg-white p-4 text-sm shadow-sm ring-1 ring-black/5">
+          This result is published. Only an organisation admin can change it.
+        </p>
+      ) : (
+        <ResultForm match={formMatch} canPublish={!scorer} />
+      )}
 
       {preview ? (
         <details className="rounded-lg bg-white p-3 shadow-sm ring-1 ring-black/5">

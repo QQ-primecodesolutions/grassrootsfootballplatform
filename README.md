@@ -224,6 +224,13 @@ signed in for 14 days.
   `pnpm admin:super` (see [Local setup](#local-setup) and [Deploy](#4-seed-production-once)).
 - **Organisation admin**: works only in the organisations they were added to. The header switches
   between them if there is more than one.
+- **Scorer**: for club officials or volunteers at the ground. Sees only **Results**: enters the
+  score of a played match and taps *Send score for confirmation*. The score stays private until an
+  organisation admin publishes it from **Waiting for you to publish** on the admin home, which
+  shows who entered each score. A scorer can't change a published result, set a match as
+  postponed or cancelled, or touch fixtures, teams or setup.
+  - Choose the role when adding the person on the Platform page; *Make scorer* / *Make
+    organisation admin* changes it later.
 
 Onboarding a new organisation:
 

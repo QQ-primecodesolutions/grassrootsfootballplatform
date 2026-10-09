@@ -22,8 +22,14 @@ export function InviteForm({ orgId, orgName }: { orgId: string; orgName: string 
             <input name="email" type="email" required maxLength={200} autoComplete="off" inputMode="email" className={inputClass} />
           </Field>
         </div>
+        <Field label="Role" hint="A scorer only enters scores; an organisation admin publishes them.">
+          <select name="role" defaultValue="org_admin" className={inputClass}>
+            <option value="org_admin">Organisation admin (everything)</option>
+            <option value="scorer">Scorer (enters scores only)</option>
+          </select>
+        </Field>
         <button type="submit" disabled={pending} className="h-12 w-full rounded-lg bg-gray-900 font-semibold text-white disabled:opacity-60">
-          {pending ? "Creating…" : "Add admin"}
+          {pending ? "Creating…" : "Add person"}
         </button>
       </form>
       <FormMessage ok={state.ok} message={state.message} />

@@ -36,7 +36,9 @@ export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
         </Suspense>
       </header>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-24 pt-4">{children}</main>
-      <AdminNav />
+      <Suspense fallback={<AdminNav scorer />}>
+        <RoleNav />
+      </Suspense>
     </div>
   );
 }
@@ -69,6 +71,13 @@ async function OrgSwitcher() {
       </button>
     </form>
   );
+}
+
+/** The bottom bar for the user's role in the current organisation. */
+async function RoleNav() {
+  const { user, orgId } = await getCurrentUser();
+  const current = await resolveAdminOrg(user, orgId);
+  return <AdminNav scorer={current?.org.role === "scorer"} />;
 }
 
 async function UserBar() {
