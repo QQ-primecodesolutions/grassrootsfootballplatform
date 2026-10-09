@@ -76,6 +76,16 @@ describe("homepage cards", () => {
     expect(matchesQuery(card, "qwaqwa development")).toBe(true);
   });
 
+  it("shows the organisation's own name (no run-by) when it is the competition's brand", () => {
+    const qdl = { ...bathoPele, name: "Qwaqwa Development League", shortName: "QDL" };
+    const card = directoryCard(qdl, [competition({})]);
+    expect(card).toMatchObject({ title: "Qwaqwa Development League", runBy: null, logoUrl: "/brand/qdl.png", tagline: "It's time to shine" });
+    // Extra spaces don't matter, but a different name (Batho Pele's) still means "run by".
+    expect(directoryCard({ ...qdl, name: "Qwaqwa  Development League " }, [competition({})]).runBy).toBeNull();
+    expect(directoryCard({ ...qdl, name: "Sports Club" }, [competition({ name: "Sports Club Open" })]).runBy).toBeNull();
+    expect(directoryCard(bathoPele, [competition({})]).runBy).toBe("Batho Pele Kasi Soccer Tournament");
+  });
+
   it("shows the organisation itself otherwise", () => {
     const card = directoryCard(bathoPele, [competition({ logoUrl: null })]);
     expect(card).toMatchObject({ title: "Batho Pele Kasi Soccer Tournament", runBy: null, logoUrl: "/brand/batho-pele.png" });
