@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { getCompetitionData, listCompetitions } from "@/lib/db/queries";
 import { publicEnv } from "@/lib/env";
 import { competitionOgTarget, ogImageMetadata, versionOf } from "@/lib/graphics/links";
+import { PlatformCredit } from "@/components/public/PlatformCredit";
 import { facebookUrl } from "@/lib/public/links";
 import { brandStyle, requireOrg } from "@/lib/public/org";
 
@@ -88,6 +89,7 @@ async function OrgFrame({ params, children }: Pick<LayoutProps<"/[org]">, "param
           <p className="pt-2 opacity-70">
             Tables are calculated from confirmed results · {publicEnv.NEXT_PUBLIC_APP_NAME}
           </p>
+          <PlatformCredit className="opacity-70" />
         </div>
       </footer>
     </div>

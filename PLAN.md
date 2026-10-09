@@ -104,6 +104,9 @@ the rest of the document, this section wins.
 - 2026-10-09: logo upload, approved by the owner, stored **in Postgres** (owner's choice over
   Vercel Blob: no new service, key or dependency). The browser tidies and shrinks images
   before upload.
+- 2026-10-10, approved by the owner: org admins add their own scorers (People page); group
+  stages (migration 0007, matches.stage); a draft privacy notice (published once a contact email
+  is set); a homepage with the owner's QwaQwa photo, organisation search and the PrimeCode credit.
 - 2026-10-09: scorer role, approved by the owner. Scorers enter scores, which stay provisional;
   only org admins publish. Migration 0006 adds the role and `matches.result_entered_by`.
   - New competition format `friendly` (enum value, migration 0004): no table, and draws are

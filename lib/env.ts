@@ -16,6 +16,13 @@ const authSchema = z.object({
 const publicSchema = z.object({
   NEXT_PUBLIC_APP_NAME: z.string().min(1).default("Grassroots Football"),
   NEXT_PUBLIC_SITE_URL: z.url().optional(),
+  /** Contact for privacy questions and requests. Until it is set, /privacy is a draft (404 in production). */
+  NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.email({ error: "NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL must be an email address" }).optional()),
 });
 
 function parse<T extends z.ZodType>(schema: T, source: Record<string, string | undefined>): z.infer<T> {
@@ -59,7 +66,13 @@ export function getAuthEnv() {
 export const publicEnv = parse(publicSchema, {
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL: process.env.NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL,
 });
+
+/** The privacy notice is published once a contact email is set (always viewable in development). */
+export function privacyNoticeLive(): boolean {
+  return Boolean(publicEnv.NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL);
+}
 
 /**
  * Absolute site origin for OG images and share links: the deployment's own URL on Vercel

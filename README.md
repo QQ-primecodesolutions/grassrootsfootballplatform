@@ -64,6 +64,7 @@ pnpm db:down        # stops it (the data is kept in a Docker volume)
 |---|---|---|
 | `DATABASE_URL` | app, build, scripts | Postgres URL. On Neon use the **pooled** string. The Vercel/Neon integration sets it. |
 | `DATABASE_URL_UNPOOLED` | migrations | Neon **direct** string. Optional: falls back to `DATABASE_URL`. The integration sets it. |
+| `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL` | public | Contact on the privacy notice. Until it's set, `/privacy` is a draft (visible in development, 404 in production) and footers have no Privacy link. |
 | `AUTH_SECRET` | admin | At least 32 characters; signs the admin cookie. Generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. Changing it signs everyone out. |
 | `NEXT_PUBLIC_APP_NAME` | UI | Product name shown in the app (default "Grassroots Football"). |
 | `NEXT_PUBLIC_SITE_URL` | share links, link previews | The public address, e.g. `https://football.example.org`. On Vercel it falls back to the production domain, and preview deployments always use their own URL. |
@@ -342,6 +343,17 @@ and *Or paste a link*. Upload from the phone's gallery:
 - **Setup**: competitions, their teams, rules and points adjustments (above). **All teams** lists
   every team with its aliases (other spellings).
 - Venues are created from the fixture forms. Organisation branding is edited by the platform admin.
+
+## Homepage and privacy
+
+- `/` is the platform homepage: a QwaQwa banner (`public/home/qwaqwa.jpg`, cropped and
+  compressed; Next.js serves phones a smaller version), a search box that filters the listed
+  organisations as you type, and the organisation cards. To change the photo, replace that file
+  (a wide JPEG, roughly 1400×520, under 200 KB) and redeploy.
+- Every public footer says "Developed and Maintained By PrimeCode Solutions" (link to
+  primecodesolutions.co.za).
+- `/privacy` is the privacy notice (POPIA). It's a **draft for the owner to review**: check the
+  wording, set `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL` in Vercel and redeploy to publish it.
 
 ## Graphics
 

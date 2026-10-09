@@ -161,6 +161,14 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
   subquery must name its tables explicitly (see `lib/db/queries/setup.ts`).
 - Result rules live in `lib/match/result-input.ts` and captions in `lib/share/`. Both are pure and tested.
 
+## Homepage, privacy, credit
+
+- `app/page.tsx` always shows the homepage (it no longer redirects when there's one org).
+  `OrgDirectory` filters in the browser (`matchesQuery`). The hero is `public/home/qwaqwa.jpg`
+  via `next/image`.
+- `PlatformCredit` is the footer line on every public page (plus the Privacy link once
+  `privacyNoticeLive()`). "privacy" and "media" are reserved org slugs.
+
 ## Graphics (`lib/graphics/`)
 
 - `model.ts`: pure view models, tested. `graphics.tsx` and `parts.tsx`: Satori JSX.
