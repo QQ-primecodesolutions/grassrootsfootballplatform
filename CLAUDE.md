@@ -175,6 +175,10 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
   results from listed organisations only, tagged with every listed org's tag.
 - Quotes (`lib/testimonials.ts`) are shown only when `approved: true`. Never publish words in a
   real organisation's name without their approval.
+- Platform logo: `public/brand/platform-logo.png` (login page) and `platform-icon.png`
+  (homepage, manifest). `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png` and
+  `app/opengraph-image.png` are Next.js file conventions. The logo artwork contains the words
+  "QwaQwa Football Platform"; if `NEXT_PUBLIC_APP_NAME` changes, the artwork must change too.
 - `PlatformCredit` is the footer line on every public page (plus the Privacy link once
   `privacyNoticeLive()`). "privacy" and "media" are reserved org slugs.
 

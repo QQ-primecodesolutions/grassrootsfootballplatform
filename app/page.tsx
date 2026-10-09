@@ -8,6 +8,7 @@ import { publicEnv } from "@/lib/env";
 import { HERO_PHOTOS } from "@/lib/home";
 import { directoryCard } from "@/lib/public/directory";
 import { publishedTestimonials } from "@/lib/testimonials";
+import platformIcon from "@/public/brand/platform-icon.png";
 
 const FEATURES = [
   { title: "Live tables", text: "Calculated from confirmed results only, so the log is always right." },
@@ -52,7 +53,10 @@ export default async function HomePage() {
         {/* Darken the photo so the text stays readable on any screen. */}
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-black/50 via-black/15 to-emerald-950/80" />
         <div className="mx-auto max-w-3xl px-4 pb-16 pt-10 sm:pb-20 sm:pt-16">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-200">Community football</p>
+          <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-200">
+            <Image src={platformIcon} alt="" width={36} height={36} className="rounded-lg shadow" />
+            Community football
+          </p>
           <h1 className="mt-2 font-display text-5xl font-bold uppercase leading-none tracking-wide drop-shadow sm:text-6xl">{app}</h1>
           <p className="mt-3 max-w-md text-lg leading-snug text-white/90 drop-shadow">
             League tables, fixtures and results for kasi and community football, from QwaQwa and beyond.
