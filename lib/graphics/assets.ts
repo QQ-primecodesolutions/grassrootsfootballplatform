@@ -1,5 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize, sep } from "node:path";
+import { getPublicMedia } from "@/lib/db/queries/media";
+import { parseMediaPath } from "@/lib/media/image";
 
 /** Font family name used by every graphic. */
 export const GRAPHIC_FONT = "Barlow Condensed";
@@ -42,12 +44,17 @@ const MAX_BYTES = 1_500_000;
 
 /**
  * A logo as a data URI, or null if it can't be loaded (the graphic then falls back to a
- * text lockup instead of failing). Accepts files under `public/` ("/brand/logo.png") or
- * https URLs (3 s timeout).
+ * text lockup instead of failing). Accepts uploaded images ("/media/{org}/{id}.png", read
+ * from the database), files under `public/` ("/brand/logo.png") or https URLs (3 s timeout).
  */
 export async function loadLogo(url: string | null): Promise<string | null> {
   if (!url) return null;
   try {
+    const uploaded = parseMediaPath(url);
+    if (uploaded) {
+      const found = await getPublicMedia(uploaded.orgSlug, uploaded.id);
+      return found ? `data:${found.contentType};base64,${found.bytes.toString("base64")}` : null;
+    }
     if (url.startsWith("/")) {
       const root = join(process.cwd(), "public");
       const path = normalize(join(root, url));

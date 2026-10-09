@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createTeamAction, updateTeamAction, type TeamFormState } from "@/app/admin/(panel)/teams/actions";
 import { Field, FormMessage, inputClass } from "./fields";
+import { LogoField } from "./LogoField";
 
 export type TeamFormValues = {
   id?: string;
@@ -66,9 +67,7 @@ export function TeamForm({ team, clubs }: { team?: TeamFormValues; clubs: { id: 
           <input name="newClubName" maxLength={80} className={inputClass} />
         </Field>
       ) : null}
-      <Field label="Logo link (optional)" hint="A full https:// link to a square image">
-        <input name="logoUrl" type="url" defaultValue={team?.logoUrl ?? ""} maxLength={500} className={inputClass} />
-      </Field>
+      <LogoField label="Logo (optional)" hint="A square badge works best." defaultValue={team?.logoUrl ?? null} />
       <FormMessage ok={state.ok} message={state.message} />
       <button type="submit" disabled={pending} className="h-12 w-full rounded-lg bg-gray-900 font-semibold text-white disabled:opacity-60">
         {pending ? "Saving…" : editing ? "Save changes" : "Add team"}

@@ -289,6 +289,21 @@ Group stages (groups, then knockouts) aren't supported yet.
 Re-running `pnpm db:seed` refreshes only logos and Facebook links. Names, settings, rules and
 sponsors edited in admin are kept.
 
+### Logos
+
+Every logo field (organisation, competition, team, sponsor) has **Upload logo**, **Remove**
+and *Or paste a link*. Upload from the phone's gallery:
+
+- The phone tidies the picture first. It removes a plain background colour (e.g. a JPEG's
+  white) where it touches the edges, crops the empty margins, and shrinks it to 600 px. So a
+  logo saved from WhatsApp fills its space on graphics, and stays small (usually under 100 KB).
+- Only PNG and JPEG are stored (checked on the server). HEIC photos from iPhones work in Safari;
+  elsewhere, save the logo as PNG or JPEG first.
+- The logo changes when you **save the form**.
+- Uploaded logos live in the database (`media` table) and are served from
+  `/media/{org}/{id}.png` with a one-year cache. There's no separate file store to set up.
+- The organisation logo is uploaded from **Platform → the organisation** (after creating it).
+
 ### Day-to-day admin
 - **Results**: tap a match, use the +/− buttons, then *Save provisional* or *Confirm & publish*.
   - A confirmed result is published straight away, and the public table and pages update within
@@ -356,5 +371,6 @@ pnpm typecheck && pnpm lint && pnpm test
 | Admin: "Too many wrong attempts from this device" | Wait the minutes shown. If you forgot the password, ask the platform admin for a reset link (platform admins: run `pnpm admin:super` again). |
 | Neon SQL editor: `relation "organisations" does not exist` | The editor is on a different branch from your app. Switch branches, or run `pnpm db:migrate` against that one. |
 | Link previews show an old image | WhatsApp and Facebook cache previews per link. Test a new link, or refresh the preview in Facebook's Sharing Debugger. |
-| Graphics show text instead of a logo | Check `logo_url`: a file under `public/` starting with `/`, or an https URL returning PNG, JPEG, SVG or WebP under 1.5 MB. |
+| Graphics show text instead of a logo | Upload the logo in admin. For a pasted link: it must be https and return PNG, JPEG, SVG or WebP under 1.5 MB. |
+| Logo upload: "That picture can't be read here" | The browser can't open that format (often HEIC). Save it as PNG or JPEG and upload again. |
 | `pnpm install` refuses a package version | pnpm's minimum-release-age policy blocks very new releases. Pick an older version; don't bypass the policy. |

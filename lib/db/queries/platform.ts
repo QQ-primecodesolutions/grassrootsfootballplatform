@@ -7,6 +7,7 @@ import {
   type OrganisationCreateInput,
   type OrganisationUpdateInput,
 } from "@/lib/platform/organisation-input";
+import { unsafeOrgScope, type OrgScope } from "./organisations";
 
 /*
  * Super admin (platform) operations: organisations and their admins.
@@ -240,4 +241,15 @@ export async function ensureSuperAdmin(input: { email: string; name: string }, d
     .onConflictDoUpdate({ target: users.email, set: { isSuperAdmin: true, disabledAt: null } })
     .returning({ id: users.id, passwordHash: users.passwordHash });
   return { userId: row!.id, hasPassword: row!.passwordHash !== null };
+}
+
+/** An OrgScope for an organisation the super admin is editing (e.g. to upload its logo). */
+export async function orgScopeForPlatform(_p: PlatformScope, orgId: string, db: Db = getDb()): Promise<OrgScope | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(orgId)) return null;
+  const [org] = await db
+    .select({ id: organisations.id, slug: organisations.slug })
+    .from(organisations)
+    .where(eq(organisations.id, orgId))
+    .limit(1);
+  return org ? unsafeOrgScope(org.id, org.slug) : null;
 }

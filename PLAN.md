@@ -100,6 +100,10 @@ the rest of the document, this section wins.
   - Fixture graphics in admin: the share page per match day, links after saving fixtures, and an
     "Announce this match" card. The graphics already existed; only the admin entry points were
     missing.
+  - Sponsors in setup, and fixtures-graphic rows sized to the list.
+- 2026-10-09: logo upload, approved by the owner, stored **in Postgres** (owner's choice over
+  Vercel Blob: no new service, key or dependency). The browser tidies and shrinks images
+  before upload. Next: a scorer role (enter scores, but only org admins confirm).
   - New competition format `friendly` (enum value, migration 0004): no table, and draws are
     allowed. It also covers matches in other organisers' tournaments.
 

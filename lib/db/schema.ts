@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  customType,
   date,
   foreignKey,
   index,
@@ -560,4 +561,32 @@ export const loginFailures = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("login_failures_ip_created_idx").on(t.ip, t.createdAt), index("login_failures_created_idx").on(t.createdAt)],
+);
+
+// ---------------------------------------------------------------------------
+// Uploaded images (logos). Small, public branding files kept in Postgres so there's no
+// separate file store; served by app/media/[org]/[file] with long-lived caching.
+// ---------------------------------------------------------------------------
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+export const media = pgTable(
+  "media",
+  {
+    id: id(),
+    organisationId: uuid("organisation_id")
+      .notNull()
+      .references(() => organisations.id, { onDelete: "cascade" }),
+    contentType: text("content_type").notNull(),
+    bytes: bytea("bytes").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    /** Hex SHA-256 of the bytes: the same file uploaded twice is stored once per organisation. */
+    sha256: text("sha256").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("media_org_sha256_uq").on(t.organisationId, t.sha256),
+    check("media_content_type", sql`content_type IN ('image/png', 'image/jpeg')`),
+    check("media_size", sql`byte_size > 0 AND byte_size <= 1500000`),
+  ],
 );

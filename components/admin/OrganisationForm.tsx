@@ -8,6 +8,7 @@ import {
 } from "@/app/admin/(panel)/platform/actions";
 import { slugify } from "@/lib/fixtures-paste/normalize";
 import { Field, FormMessage, inputClass } from "./fields";
+import { LogoField } from "./LogoField";
 
 export type OrganisationFormValues = {
   id: string;
@@ -88,9 +89,11 @@ export function OrganisationForm({ organisation }: { organisation?: Organisation
           />
         </Field>
       </div>
-      <Field label="Logo link (optional)" hint="A full https:// link to the logo image">
-        <input name="logoUrl" defaultValue={organisation?.logoUrl ?? ""} maxLength={500} className={inputClass} />
-      </Field>
+      {organisation ? (
+        <LogoField label="Logo" hint="PNG or JPEG. A wide logo works best in the header." defaultValue={organisation.logoUrl} orgId={organisation.id} />
+      ) : (
+        <p className="text-sm text-gray-600">You can upload the logo after creating the organisation.</p>
+      )}
       <Field label="Facebook page (optional)" hint="https://www.facebook.com/…">
         <input name="facebook" type="url" defaultValue={organisation?.facebook ?? ""} maxLength={500} className={inputClass} />
       </Field>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAcceptedLogoValue } from "@/lib/media/image";
 import { safeExternalUrl } from "@/lib/public/links";
 
 /**
@@ -11,6 +12,7 @@ export const RESERVED_SLUGS = new Set([
   "admin",
   "api",
   "graphics",
+  "media",
   "brand",
   "platform",
   "login",
@@ -44,14 +46,15 @@ const optionalText = (max: number) =>
     .max(max)
     .transform((v) => v || null);
 
-/** A logo is a file shipped in public/brand or a full https:// link. */
+/** An uploaded logo (/media/…), a file shipped in public/brand, or a full https:// link. */
 const logoUrl = z
   .string()
   .trim()
   .max(500)
+  .default("")
   .transform((v) => v || null)
-  .refine((v) => v === null || /^\/brand\/[\w.-]+\.(png|jpe?g|webp|svg)$/i.test(v) || safeExternalUrl(v) !== null, {
-    message: "Logo must be a full https:// link (or /brand/… for files in the app)",
+  .refine((v) => v === null || isAcceptedLogoValue(v), {
+    message: "Upload a logo, or use a full https:// link",
   });
 
 const facebook = z

@@ -16,6 +16,7 @@ import { COMPETITION_TYPE_LABELS } from "@/lib/competitions/input";
 import { slugify } from "@/lib/fixtures-paste/normalize";
 import { TIE_BREAKER_LABELS, TIE_BREAKERS, type CompetitionRules } from "@/lib/rules";
 import { Field, FormMessage, inputClass } from "./fields";
+import { LogoField } from "./LogoField";
 
 const initial: SetupFormState = { ok: false, message: null, nonce: 0 };
 const submitClass = "h-12 w-full rounded-lg bg-gray-900 font-semibold text-white disabled:opacity-60";
@@ -154,9 +155,7 @@ export function CompetitionForm({
           <Field label="Slogan">
             <input name="slogan" defaultValue={competition?.slogan ?? ""} maxLength={120} className={inputClass} />
           </Field>
-          <Field label="Logo link" hint="A full https:// link to the competition's logo">
-            <input name="logoUrl" defaultValue={competition?.logoUrl ?? ""} maxLength={500} className={inputClass} />
-          </Field>
+          <LogoField label="Logo" hint="Shown next to the organisation's logo on graphics." defaultValue={competition?.logoUrl ?? null} />
           <Field label="Facebook page" hint="https://www.facebook.com/…">
             <input name="facebook" type="url" defaultValue={competition?.facebook ?? ""} maxLength={500} className={inputClass} />
           </Field>
@@ -388,9 +387,7 @@ export function AddSponsorForm({
           <Field label="Sponsor name" hint="As it should appear on graphics">
             <input name="name" required maxLength={60} className={inputClass} />
           </Field>
-          <Field label="Logo link (optional)" hint="A full https:// link. Without one, the name is shown.">
-            <input name="logoUrl" maxLength={500} className={inputClass} />
-          </Field>
+          <LogoField label="Logo (optional)" hint="Without one, the name is shown." defaultValue={null} />
         </>
       ) : null}
       <FormMessage ok={state.ok} message={state.message} />
@@ -416,9 +413,7 @@ export function SponsorLogoForm({
     <form action={action} className="mt-2 space-y-2">
       <input type="hidden" name="competitionId" value={competitionId} />
       <input type="hidden" name="sponsorId" value={sponsorId} />
-      <Field label="Logo link" hint="Leave empty to show the name. Used on every competition with this sponsor.">
-        <input name="logoUrl" defaultValue={logoUrl ?? ""} maxLength={500} className={inputClass} />
-      </Field>
+      <LogoField label="Logo" hint="Remove it to show the name. Used on every competition with this sponsor." defaultValue={logoUrl} />
       <FormMessage ok={state.ok} message={state.message} />
       <button type="submit" disabled={pending} className="h-11 w-full rounded-lg bg-white font-semibold ring-1 ring-black/15 disabled:opacity-60">
         {pending ? "Saving…" : "Save logo"}

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAcceptedLogoValue } from "@/lib/media/image";
 import { safeExternalUrl } from "@/lib/public/links";
 import { competitionRulesSchema, TIE_BREAKERS, type CompetitionRules } from "@/lib/rules";
 
@@ -39,8 +40,8 @@ const logoUrl = z
   .max(500)
   .default("")
   .transform((v) => v || null)
-  .refine((v) => v === null || /^\/brand\/[\w.-]+\.(png|jpe?g|webp|svg)$/i.test(v) || safeExternalUrl(v) !== null, {
-    message: "Logo must be a full https:// link",
+  .refine((v) => v === null || isAcceptedLogoValue(v), {
+    message: "Upload a logo, or use a full https:// link",
   });
 
 const facebook = z

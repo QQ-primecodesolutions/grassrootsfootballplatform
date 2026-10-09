@@ -5,6 +5,7 @@ import { refresh, updateTag } from "next/cache";
 import { z } from "zod";
 import { getCurrentAdmin } from "@/lib/auth";
 import { orgTag, teamTag } from "@/lib/cache/tags";
+import { isAcceptedLogoValue } from "@/lib/media/image";
 import { addTeamAlias, createTeam, removeTeamAlias, updateTeam, type TeamInput } from "@/lib/db/queries/admin";
 
 export type TeamFormState = { ok: boolean; message: string | null };
@@ -20,7 +21,7 @@ const teamSchema = z
     gender: z.enum(["male", "female", "mixed", ""]).transform((v) => (v === "" ? null : v)),
     clubId: optional(z.string()),
     newClubName: optional(z.string().trim().max(80)),
-    logoUrl: optional(z.string().trim().url("Logo must be a full https:// link").max(500)),
+    logoUrl: optional(z.string().trim().max(500).refine(isAcceptedLogoValue, "Upload a logo, or use a full https:// link")),
   })
   .transform((t) => ({
     ...t,

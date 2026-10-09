@@ -142,6 +142,12 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
   none, so admin changes survive a re-seed.
 - Fixtures graphic: rows grow when there are 1–3 fixtures (`fixtureRowHeight`), and one name
   size fits every name (`fixtureNameFont`, which wraps the same way as `<Words>`).
+- Logos: `LogoField` uploads via `uploadLogoAction` (`app/admin/media-actions.ts`). The browser
+  first clears an edge-connected plain background, crops margins (`lib/media/trim.ts`, pure) and
+  shrinks to 600 px (`resize-image.ts`). The server accepts only PNG/JPEG by magic bytes, max
+  1.5 MB (`lib/media/image.ts`), deduplicated per org in `media`. They're served by
+  `app/media/[org]/[file]` (immutable cache). `loadLogo` reads `/media/…` straight from the DB.
+  "media" is a reserved org slug.
 - Fixture sharing: `/admin/share/fixtures/[competitionId]?date=`, built from
   `lib/admin/share-links.ts` and `lib/share/fixtures.ts` (pure captions). `GraphicShare` is the
   client panel; `share-hooks.ts` has the Web Share helpers shared with `SharePanel`.
