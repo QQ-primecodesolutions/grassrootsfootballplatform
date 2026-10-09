@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import { refresh, updateTag } from "next/cache";
 import { z } from "zod";
 import { getCurrentSuperAdmin, setSession } from "@/lib/auth";
+import { inviteLinkFor, type ShareableLink } from "@/lib/admin/invite-links";
 import { ROLE_LABELS } from "@/lib/auth/roles";
-import { LINK_LIFETIME_HOURS, setPasswordPath, type LinkPurpose } from "@/lib/auth/tokens";
+import type { LinkPurpose } from "@/lib/auth/tokens";
 import { ORGANISATIONS_TAG, orgTag } from "@/lib/cache/tags";
 import {
   createOrganisation,
@@ -17,7 +18,6 @@ import {
   setOrganisationListed,
   updateOrganisation,
 } from "@/lib/db/queries/platform";
-import { publicEnv, siteUrl } from "@/lib/env";
 import { inviteSchema, organisationCreateSchema, organisationUpdateSchema } from "@/lib/platform/organisation-input";
 
 export type OrgFormState = { ok: boolean; message: string | null };
@@ -25,7 +25,7 @@ export type LinkState = {
   ok: boolean;
   message: string | null;
   /** A one-time link to send on WhatsApp (shown once; only its hash is stored). */
-  link?: { url: string; whatsappText: string; purpose: LinkPurpose };
+  link?: ShareableLink;
 };
 
 function invalidateOrg(orgId: string) {
@@ -73,22 +73,6 @@ export async function workInOrganisationAction(formData: FormData): Promise<void
   redirect("/admin");
 }
 
-function linkFor(
-  token: string,
-  purpose: LinkPurpose,
-  name: string,
-  orgName: string,
-  role: "org_admin" | "scorer" = "org_admin",
-): NonNullable<LinkState["link"]> {
-  const url = `${siteUrl()}${setPasswordPath(token)}`;
-  const days = LINK_LIFETIME_HOURS[purpose] / 24;
-  const valid = days >= 2 ? `${days} days` : `${LINK_LIFETIME_HOURS[purpose]} hours`;
-  const whatsappText =
-    purpose === "invite"
-      ? `Hi ${name}, you've been added as ${role === "scorer" ? "a scorer" : "an admin"} for ${orgName} on ${publicEnv.NEXT_PUBLIC_APP_NAME}. Open this link to choose your password (it works once and expires in ${valid}):\n${url}`
-      : `Hi ${name}, here's your link to choose a new ${publicEnv.NEXT_PUBLIC_APP_NAME} admin password (it works once and expires in ${valid}):\n${url}`;
-  return { url, whatsappText, purpose };
-}
 
 export async function inviteAdminAction(_prev: LinkState, formData: FormData): Promise<LinkState> {
   const { platform } = await getCurrentSuperAdmin();
@@ -109,7 +93,7 @@ export async function inviteAdminAction(_prev: LinkState, formData: FormData): P
   return {
     ok: true,
     message: `Invite created for ${parsed.data.name} (${ROLE_LABELS[parsed.data.role].toLowerCase()}). Send them this link now: it is shown only once.`,
-    link: linkFor(result.token, "invite", parsed.data.name, id.data.orgName, parsed.data.role),
+    link: inviteLinkFor(result.token, "invite", parsed.data.name, id.data.orgName, parsed.data.role),
   };
 }
 
@@ -127,7 +111,7 @@ export async function memberLinkAction(_prev: LinkState, formData: FormData): Pr
   return {
     ok: true,
     message: "New link created. Any earlier link for this person no longer works.",
-    link: linkFor(token, purpose, parsed.data.name, parsed.data.orgName),
+    link: inviteLinkFor(token, purpose, parsed.data.name, parsed.data.orgName),
   };
 }
 

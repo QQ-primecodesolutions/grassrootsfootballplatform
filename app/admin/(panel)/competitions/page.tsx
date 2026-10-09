@@ -37,6 +37,9 @@ async function Competitions({ searchParams }: Pick<PageProps<"/admin/competition
         <Link href="/admin/teams" className="rounded-lg bg-white px-3 py-4 text-center font-semibold shadow-sm ring-1 ring-black/10">
           All teams
         </Link>
+        <Link href="/admin/people" className="col-span-2 rounded-lg bg-white px-3 py-3 text-center font-semibold shadow-sm ring-1 ring-black/10">
+          People &amp; scorers
+        </Link>
       </div>
 
       {competitions.length ? (

@@ -74,7 +74,8 @@ export function MemberLinkButton({
   );
 }
 
-function LinkResult({ link }: { link: NonNullable<LinkState["link"]> }) {
+/** A one-time link with WhatsApp and copy buttons, shown once after it is created. */
+export function LinkResult({ link }: { link: NonNullable<LinkState["link"]> }) {
   const [copied, setCopied] = useState<string | null>(null);
   const copy = async () => {
     try {

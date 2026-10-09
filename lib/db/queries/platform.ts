@@ -139,9 +139,13 @@ export async function setOrganisationListed(_p: PlatformScope, orgId: string, li
 // Admins and links
 // ---------------------------------------------------------------------------
 
-/** Create a one-time link for a user; earlier unused links for them stop working. Returns the raw token. */
+/**
+ * Create a one-time link for a user; earlier unused links for them stop working. Returns the raw
+ * token. `p` records who made it (a super admin, or an org admin adding a scorer). Callers must
+ * have checked they may manage this user.
+ */
 export async function issuePasswordLink(
-  p: PlatformScope | null,
+  p: { readonly userId: string } | null,
   userId: string,
   purpose: LinkPurpose,
   now: Date,

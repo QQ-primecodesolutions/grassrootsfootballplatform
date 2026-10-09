@@ -231,6 +231,10 @@ signed in for 14 days.
   postponed or cancelled, or touch fixtures, teams or setup.
   - Choose the role when adding the person on the Platform page; *Make scorer* / *Make
     organisation admin* changes it later.
+  - Organisation admins add their own scorers under **People & scorers** (admin home or Setup):
+    name and email, then send the one-time link on WhatsApp. They can send new links to, and
+    remove, scorers who belong only to their organisation. Adding another organisation admin
+    stays with the platform admin.
 
 Onboarding a new organisation:
 

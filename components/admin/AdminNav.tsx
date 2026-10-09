@@ -12,7 +12,7 @@ const ITEMS = [
   {
     href: "/admin/competitions",
     label: "Setup",
-    match: (p: string) => p.startsWith("/admin/competitions") || p.startsWith("/admin/teams"),
+    match: (p: string) => p.startsWith("/admin/competitions") || p.startsWith("/admin/teams") || p.startsWith("/admin/people"),
   },
 ];
 
