@@ -1,10 +1,12 @@
 import Image from "next/image";
+import { LatestResults } from "@/components/public/LatestResults";
 import { OrgDirectory, type DirectoryOrg } from "@/components/public/OrgDirectory";
 import { PlatformCredit } from "@/components/public/PlatformCredit";
-import { listOrganisations } from "@/lib/db/queries";
+import { listLatestResults, listOrganisations } from "@/lib/db/queries";
 import { CONTACT_WHATSAPP, whatsappChatUrl } from "@/lib/contact";
 import { publicEnv } from "@/lib/env";
-import qwaqwa from "@/public/home/qwaqwa.jpg";
+import { HERO_PHOTOS } from "@/lib/home";
+import { publishedTestimonials } from "@/lib/testimonials";
 
 const FEATURES = [
   { title: "Live tables", text: "Calculated from confirmed results only, so the log is always right." },
@@ -14,7 +16,10 @@ const FEATURES = [
 
 export default async function HomePage() {
   const app = publicEnv.NEXT_PUBLIC_APP_NAME;
-  const orgs: DirectoryOrg[] = (await listOrganisations()).map((o) => ({
+  const [organisations, latest] = await Promise.all([listOrganisations(), listLatestResults(6)]);
+  const testimonials = publishedTestimonials();
+  const slides = HERO_PHOTOS.length;
+  const orgs: DirectoryOrg[] = organisations.map((o) => ({
     id: o.id,
     slug: o.slug,
     name: o.name,
@@ -27,15 +32,25 @@ export default async function HomePage() {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-page">
       <header className="relative isolate overflow-hidden bg-emerald-950 text-white">
-        <Image
-          src={qwaqwa}
-          alt="The Maluti mountains above QwaQwa"
-          fill
-          priority
-          sizes="100vw"
-          placeholder="blur"
-          className="-z-10 object-cover object-[center_40%]"
-        />
+        {/* The first photo always shows; the others fade in over it in turn (7 s each). */}
+        {HERO_PHOTOS.map((photo, i) => (
+          <Image
+            key={photo.alt}
+            src={photo.src}
+            alt={i === 0 ? photo.alt : ""}
+            fill
+            priority={i === 0}
+            sizes="100vw"
+            placeholder={i === 0 ? "blur" : "empty"}
+            className={`-z-10 object-cover ${i > 0 ? "hero-slide" : ""}`}
+            style={{
+              objectPosition: photo.position,
+              ...(i > 0 && slides <= 3
+                ? { animationName: `hero-slide-${slides}`, animationDuration: `${slides * 7}s`, animationDelay: `${i * 7}s` }
+                : {}),
+            }}
+          />
+        ))}
         {/* Darken the photo so the text stays readable on any screen. */}
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-black/50 via-black/15 to-emerald-950/80" />
         <div className="mx-auto max-w-3xl px-4 pb-16 pt-10 sm:pb-20 sm:pt-16">
@@ -50,6 +65,8 @@ export default async function HomePage() {
       <main className="flex-1 pb-10">
         <OrgDirectory orgs={orgs} searchPlaceholder="Search leagues and organisers…" />
 
+        <LatestResults results={latest} />
+
         <section aria-label="What you get" className="mx-auto mt-10 grid max-w-3xl grid-cols-1 gap-3 px-4 sm:grid-cols-3">
           {FEATURES.map((f) => (
             <div key={f.title} className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5">
@@ -58,6 +75,20 @@ export default async function HomePage() {
             </div>
           ))}
         </section>
+
+        {testimonials.length ? (
+          <section aria-label="What organisers say" className="mx-auto mt-10 grid max-w-3xl grid-cols-1 gap-3 px-4 sm:grid-cols-2">
+            {testimonials.map((t) => (
+              <figure key={t.name} className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+                <blockquote className="text-lg leading-snug">“{t.quote}”</blockquote>
+                <figcaption className="mt-3 text-sm">
+                  <span className="font-semibold">{t.name}</span>
+                  <span className="text-muted"> · {t.role}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </section>
+        ) : null}
 
         <section className="mx-auto mt-6 max-w-3xl px-4">
           <div className="rounded-xl bg-emerald-900 p-5 text-white">

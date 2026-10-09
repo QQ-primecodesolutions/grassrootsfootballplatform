@@ -38,3 +38,32 @@ body {
   font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
 }
+
+/*
+ * Homepage banner slideshow: the first photo always sits underneath; each later photo fades in
+ * for its turn (7 s per photo). The page sets animation-name hero-slide-2 or hero-slide-3 (by
+ * photo count), the duration and each photo's delay. No motion for people who ask their
+ * device to reduce it: they just see the first photo.
+ */
+.hero-slide {
+  opacity: 0;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+@keyframes hero-slide-2 {
+  0% { opacity: 0; }
+  6% { opacity: 1; }
+  46% { opacity: 1; }
+  52% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hero-slide-3 {
+  0% { opacity: 0; }
+  4% { opacity: 1; }
+  30% { opacity: 1; }
+  35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide { animation: none !important; }
+}

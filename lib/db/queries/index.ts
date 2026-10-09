@@ -18,3 +18,4 @@ export {
   type CompetitionSummary,
   type TeamSummary,
 } from "./competitions";
+export { listLatestResults, type LatestResult } from "./latest";

@@ -346,10 +346,18 @@ and *Or paste a link*. Upload from the phone's gallery:
 
 ## Homepage and privacy
 
-- `/` is the platform homepage: a QwaQwa banner (`public/home/qwaqwa.jpg`, cropped and
-  compressed; Next.js serves phones a smaller version), a search box that filters the listed
-  organisations as you type, and the organisation cards. To change the photo, replace that file
-  (a wide JPEG, roughly 1400×520, under 200 KB) and redeploy.
+- `/` is the platform homepage:
+  - **Banner**: photos listed in `lib/home.ts` (from `public/home/`) take turns, 7 s each,
+    fading over each other. Add a wide JPEG of roughly 1400×520 and under 200 KB. Only use
+    photos where no child can be recognised, or where a parent or guardian has consented
+    (POPIA). Files in `public/` can be downloaded even when unused.
+  - **Search**: filters the listed organisations as you type, above the organisation cards.
+  - **Latest results**: the six newest confirmed results from listed organisations.
+  - **Quotes**: from organisers, in `lib/testimonials.ts`. Drafts for Batho Pele and the QDL are
+    there **switched off**. Get each organisation's OK (they may reword), then set
+    `approved: true`.
+  - **Call to action**: "Run a league or tournament?" opens WhatsApp with PrimeCode Solutions
+    (number in `lib/contact.ts`).
 - Every public footer says "Developed and Maintained By PrimeCode Solutions" (link to
   primecodesolutions.co.za).
 - `/privacy` is the privacy notice (POPIA). It's a **draft for the owner to review**: check the

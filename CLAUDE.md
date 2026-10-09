@@ -164,8 +164,13 @@ Before every commit, run `pnpm typecheck && pnpm lint && pnpm test` and fix any 
 ## Homepage, privacy, credit
 
 - `app/page.tsx` always shows the homepage (it no longer redirects when there's one org).
-  `OrgDirectory` filters in the browser (`matchesQuery`). The hero is `public/home/qwaqwa.jpg`
-  via `next/image`.
+  `OrgDirectory` filters in the browser (`matchesQuery`). The banner photos are `HERO_PHOTOS`
+  (`lib/home.ts`), cross-faded with the CSS `hero-slide-N` keyframes (2–3 photos). Child safety:
+  no recognisable minors without consent.
+- `listLatestResults` (`lib/db/queries/latest.ts`) is the one cross-organisation read: confirmed
+  results from listed organisations only, tagged with every listed org's tag.
+- Quotes (`lib/testimonials.ts`) are shown only when `approved: true`. Never publish words in a
+  real organisation's name without their approval.
 - `PlatformCredit` is the footer line on every public page (plus the Privacy link once
   `privacyNoticeLive()`). "privacy" and "media" are reserved org slugs.
 
